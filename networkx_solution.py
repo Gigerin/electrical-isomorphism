@@ -59,6 +59,7 @@ raw_data_2 = read_file("source2.txt")
 graph_1 = data_to_graph(raw_data_1)
 #переводим данные в формат словаря в графе
 graph_2 = data_to_graph(raw_data_2)
+
 #TODO добавить проверку совпадений типов транзисторов
 print(networkx.vf2pp_is_isomorphic(graph_1, graph_2))
 
