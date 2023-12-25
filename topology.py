@@ -8,10 +8,11 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from shapely.geometry import Polygon
+
 
 def read_file(name):
     result = {}
-    flag = 0
     with open(name, "r") as file:
         program_name = file.readline()
         while True:
@@ -29,7 +30,7 @@ def read_file(name):
                         polygon = []
                         for i in range(1, len(line_two), 2):
                             polygon.append((int(line_two[i].replace(";", "")), int(line_two[i+1].replace(";", ""))))
-                        result[layer_name].append(polygon)
+                        result[layer_name].append(Polygon(polygon))
                     if line_two[0] == "4N":
                         if layer_name not in result.keys():
                             result[layer_name] = []
@@ -38,6 +39,8 @@ def read_file(name):
                 if curr_line[0] == "DS":
                     continue
     return result
+
+
 
 data = read_file("sum.cif")
 print(data)
@@ -50,13 +53,23 @@ colors = cm.viridis(np.linspace(0, 1, num_keys))
 color_dict = {key: color for key, color in zip(data.keys(), colors)}
 # Create a new figure and axis
 fig, ax = plt.subplots()
+fig.set_size_inches(8, 6)
 
+number = 0
 for key in data.keys():
     print(key)
+
     if key in ["TSP", "TM1", "TM2", "TSN"]:
+        number = number + len(data[key])
+        print(number)
         continue
     for vertices in data[key]:
-        polygon = patches.Polygon(vertices, closed=True, linewidth=1, edgecolor=color_dict[key], facecolor='none')
+        xy = list(vertices.exterior.coords)
+        if str(key)[0] != "C":
+            polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor=color_dict[key], facecolor='none')
+        else:
+            polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor="red", facecolor='none')
+
         ax.add_patch(polygon)
 
 
@@ -65,6 +78,23 @@ ax.set_ylim(-10000, 10000)
 
 # Show the plot
 plt.show()
+
+graph_1 = networkx.Graph()
+
+
+for key in data.keys():
+    num = 0
+    if key in ["TSP", "TM1", "TM2", "TSN"]:
+        continue
+    for polygon in data[key]:
+        try:
+            graph_1.add_node(str(num)+str(key), layer = polygon)
+        except Exception as e:
+            print(str(key)+str(num), polygon, e)
+        num = num+1
+
+print(graph_1.nodes)
+
 
 
 
