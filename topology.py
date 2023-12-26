@@ -8,6 +8,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from shapely.geometry import Polygon
+import time
 
 
 def read_file(name):
@@ -41,7 +42,7 @@ def read_file(name):
             number = number + 1
     return result
 
-def check_connections(initial_polygon: Polygon, polygon_layer:str, data:dict):
+def get_connections(initial_polygon: Polygon, polygon_layer:str, data:dict):
     """
     :param initial_polygon: Исходный квадратик контактный
     :param polygon_layer: Слой квадратика
@@ -56,13 +57,13 @@ def check_connections(initial_polygon: Polygon, polygon_layer:str, data:dict):
             polygons = data[layer]
             for polygon in polygons:
                 if polygon.contains(initial_polygon):
-                    print(layer, polygon)
-                    result.append(polygon)
+                    result.append(layer)
     return result
 
 
 #showing the layers in matplotlib
 def show_circuit(data):
+    num_keys = 10000
     fig, ax = plt.subplots()
     fig.set_size_inches(8, 6)
     colors = cm.viridis(np.linspace(0, 1, num_keys))
@@ -80,32 +81,35 @@ def show_circuit(data):
     plt.show()
 
 
+def convert_data_to_graph(data):
+    """
+    Переводит словарь многоугольников в граф.
+    :param data: входной словарь
+    :return: граф
+    """
+    graph = networkx.Graph()
+    for key in data.keys():
+        for polygon in data[key]:
+            graph.add_node(key, layer = polygon)
+            if str(key)[0] == "C":
+                connections = get_connections(polygon, key, data)
+                for connection in connections:
+                    graph.add_edge(key, connection)
+    return graph
+
 data = read_file("sum.cif")
-
 transistors = {k: data.pop(k) for k in list(data.keys()) if any(k.startswith(prefix) for prefix in ["TSP", "TM1", "TM2", "TSN", "CW", "M2A"])}
-num_keys = len(data.keys())
-number = 0
-print("------------KEYS-------------")
-print(data.keys())
-print("------------KEYS-------------")
 
-graph_1 = networkx.Graph()
+graph = convert_data_to_graph(data)
 
-#converting everything to a graph
-for key in data.keys():
-    num = 0
-    for polygon in data[key]:
-        try:
-            graph_1.add_node(str(key)+str(num), layer = polygon)
-            check_connections()
-        except Exception as e:
-            print(str(key)+str(num), polygon, e)
-        num = num+1
+graph_2 = graph.copy()
+print(len(data.keys()))
+start = time.time()
+print(networkx.vf2pp_is_isomorphic(graph, graph_2))
+end = time.time()
 
-for key in data.keys():
-    pass
+print(end-start)
 
+print(len(data.keys()))
 show_circuit(data)
-
-print(data)
 
