@@ -73,29 +73,27 @@ colors = cm.viridis(np.linspace(0, 1, num_keys))
 # Generate the dictionary
 color_dict = {key: color for key, color in zip(data.keys(), colors)}
 # Create a new figure and axis
-fig, ax = plt.subplots()
-fig.set_size_inches(8, 6)
+
 
 number = 0
+
+
 #showing the layers in matplotlib
-for key in data.keys():
+def show_circuit(data):
+    fig, ax = plt.subplots()
+    fig.set_size_inches(8, 6)
+    for key in data.keys():
+        for vertices in data[key]:
+            xy = list(vertices.exterior.coords)
+            if str(key)[0] != "C":
+                polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor=color_dict[key], facecolor='none')
+            else:
+                polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor="red", facecolor='none')
 
-    if key in ["TSP", "TM1", "TM2", "TSN"]:
-        number = number + len(data[key])
-        continue
-    for vertices in data[key]:
-        xy = list(vertices.exterior.coords)
-        if str(key)[0] != "C":
-            polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor=color_dict[key], facecolor='none')
-        else:
-            polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor="red", facecolor='none')
-
-        ax.add_patch(polygon)
-
-
-ax.set_xlim(-10000, 10000)
-ax.set_ylim(-10000, 10000)
-
+            ax.add_patch(polygon)
+    ax.set_xlim(-10000, 10000)
+    ax.set_ylim(-10000, 10000)
+    plt.show()
 
 
 graph_1 = networkx.Graph()
@@ -116,7 +114,7 @@ for key in data.keys():
 for key in data.keys():
     pass
 
+show_circuit(data)
 
-plt.show()
 print(data)
 
