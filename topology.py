@@ -40,12 +40,33 @@ def read_file(name):
                     continue
     return result
 
+def check_connections(initial_polygon: Polygon, polygon_layer:str, data:dict):
+    """
+    :param initial_polygon: Исходный квадратик контактный
+    :param polygon_layer: Слой квадратика
+    :param data: данные о всех слоях
+    :return: возвращает, между какими слоями и изначальным слоем надо дать ребро, список
+    """
+    result = []
+    for layer in data.keys():
+        if layer == polygon_layer:
+            continue
+        else:
+            polygons = data[layer]
+            for polygon in polygons:
+                if polygon.contains(initial_polygon):
+                    print(layer, polygon)
+                    result.append(polygon)
+    return result
+
+
 
 
 data = read_file("sum.cif")
-print(data)
-print(data.keys())
 
+transistors = {k: data.pop(k) for k in ["TSP", "TM1", "TM2", "TSN"] if k in data}
+data.pop("CW")
+data.pop("M2A")
 num_keys = len(data.keys())
 colors = cm.viridis(np.linspace(0, 1, num_keys))
 
@@ -56,12 +77,11 @@ fig, ax = plt.subplots()
 fig.set_size_inches(8, 6)
 
 number = 0
+#showing the layers in matplotlib
 for key in data.keys():
-    print(key)
 
     if key in ["TSP", "TM1", "TM2", "TSN"]:
         number = number + len(data[key])
-        print(number)
         continue
     for vertices in data[key]:
         xy = list(vertices.exterior.coords)
@@ -76,26 +96,27 @@ for key in data.keys():
 ax.set_xlim(-10000, 10000)
 ax.set_ylim(-10000, 10000)
 
-# Show the plot
-plt.show()
+
 
 graph_1 = networkx.Graph()
 
-
+#converting everything to a graph
 for key in data.keys():
     num = 0
     if key in ["TSP", "TM1", "TM2", "TSN"]:
         continue
     for polygon in data[key]:
         try:
-            graph_1.add_node(str(num)+str(key), layer = polygon)
+            graph_1.add_node(str(key)+str(num), layer = polygon)
+            check_connections()
         except Exception as e:
             print(str(key)+str(num), polygon, e)
         num = num+1
 
-print(graph_1.nodes)
+for key in data.keys():
+    pass
 
 
-
-
+plt.show()
+print(data)
 
