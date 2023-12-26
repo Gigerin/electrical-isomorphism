@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-
 import itertools
 import numpy as np
 import networkx
@@ -13,6 +12,7 @@ from shapely.geometry import Polygon
 
 def read_file(name):
     result = {}
+    number = 0
     with open(name, "r") as file:
         program_name = file.readline()
         while True:
@@ -22,7 +22,7 @@ def read_file(name):
             curr_line = line_one.split()
             if len(curr_line):
                 if curr_line[0] == "L":
-                    layer_name = curr_line[1].replace(";","")
+                    layer_name = str(curr_line[1].replace(";",""))+str(number)
                     line_two = file.readline().split()
                     if line_two[0] == "P":
                         if layer_name not in result.keys():
@@ -38,6 +38,7 @@ def read_file(name):
                         line_three = file.readline()
                 if curr_line[0] == "DS":
                     continue
+            number = number + 1
     return result
 
 def check_connections(initial_polygon: Polygon, polygon_layer:str, data:dict):
@@ -60,17 +61,6 @@ def check_connections(initial_polygon: Polygon, polygon_layer:str, data:dict):
     return result
 
 
-
-
-data = read_file("sum.cif")
-
-transistors = {k: data.pop(k) for k in ["TSP", "TM1", "TM2", "TSN"] if k in data}
-data.pop("CW")
-data.pop("M2A")
-num_keys = len(data.keys())
-number = 0
-
-
 #showing the layers in matplotlib
 def show_circuit(data):
     fig, ax = plt.subplots()
@@ -84,20 +74,26 @@ def show_circuit(data):
                 polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor=color_dict[key], facecolor='none')
             else:
                 polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor="red", facecolor='none')
-
             ax.add_patch(polygon)
     ax.set_xlim(-10000, 10000)
     ax.set_ylim(-10000, 10000)
     plt.show()
 
 
+data = read_file("sum.cif")
+
+transistors = {k: data.pop(k) for k in list(data.keys()) if any(k.startswith(prefix) for prefix in ["TSP", "TM1", "TM2", "TSN", "CW", "M2A"])}
+num_keys = len(data.keys())
+number = 0
+print("------------KEYS-------------")
+print(data.keys())
+print("------------KEYS-------------")
+
 graph_1 = networkx.Graph()
 
 #converting everything to a graph
 for key in data.keys():
     num = 0
-    if key in ["TSP", "TM1", "TM2", "TSN"]:
-        continue
     for polygon in data[key]:
         try:
             graph_1.add_node(str(key)+str(num), layer = polygon)
