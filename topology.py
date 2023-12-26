@@ -68,13 +68,6 @@ transistors = {k: data.pop(k) for k in ["TSP", "TM1", "TM2", "TSN"] if k in data
 data.pop("CW")
 data.pop("M2A")
 num_keys = len(data.keys())
-colors = cm.viridis(np.linspace(0, 1, num_keys))
-
-# Generate the dictionary
-color_dict = {key: color for key, color in zip(data.keys(), colors)}
-# Create a new figure and axis
-
-
 number = 0
 
 
@@ -82,6 +75,8 @@ number = 0
 def show_circuit(data):
     fig, ax = plt.subplots()
     fig.set_size_inches(8, 6)
+    colors = cm.viridis(np.linspace(0, 1, num_keys))
+    color_dict = {key: color for key, color in zip(data.keys(), colors)}
     for key in data.keys():
         for vertices in data[key]:
             xy = list(vertices.exterior.coords)
