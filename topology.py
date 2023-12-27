@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-
 import itertools
 import numpy as np
 import networkx
@@ -11,11 +10,13 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from shapely.geometry import Polygon
+import time
 
 TRANSISTOR_FILE_NAME = "png-clipart-transistor-npn-electronics-electronic-symbol-symbol-miscellaneous-electronics.png"
 
 def read_file(name):
     result = {}
+    number = 0
     with open(name, "r") as file:
         program_name = file.readline()
         while True:
@@ -25,7 +26,7 @@ def read_file(name):
             curr_line = line_one.split()
             if len(curr_line):
                 if curr_line[0] == "L":
-                    layer_name = curr_line[1].replace(";","")
+                    layer_name = str(curr_line[1].replace(";",""))+str(number)
                     line_two = file.readline().split()
                     if line_two[0] == "P":
                         if layer_name not in result.keys():
@@ -33,87 +34,92 @@ def read_file(name):
                         polygon = []
                         for i in range(1, len(line_two), 2):
                             polygon.append((int(line_two[i].replace(";", "")), int(line_two[i+1].replace(";", ""))))
-                        result[layer_name].append(Polygon(polygon))
+                        if len(polygon) % 2 != 0:
+                            polygon.insert(len(polygon), (polygon[len(polygon)-1][0], polygon[0][1]))
+                        result[layer_name] = Polygon(polygon)
                     if line_two[0] == "4N":
                         if layer_name not in result.keys():
                             result[layer_name] = []
-                        result[layer_name].append([line_two[1], int(line_two[2]), int(line_two[3].replace(";",""))])
+                        result[layer_name] = [line_two[1], int(line_two[2]), int(line_two[3].replace(";",""))]
                         line_three = file.readline()
                 if curr_line[0] == "DS":
                     continue
+            number = number + 1
+    return result
+
+def get_connections(initial_polygon: Polygon, polygon_layer:str, data:dict):
+    """
+    :param initial_polygon: Исходный квадратик контактный
+    :param polygon_layer: Слой квадратика
+    :param data: данные о всех слоях
+    :return: возвращает, между какими слоями и изначальным слоем надо дать ребро, список
+    """
+    result = []
+    for layer in data.keys():
+        if layer == polygon_layer:
+            continue
+        else:
+            polygon = data[layer]
+            if polygon.contains(initial_polygon):
+                result.append(layer)
     return result
 
 
-
-data = read_file("sum.cif")
-print(data)
-print(data.keys())
-
-num_keys = len(data.keys())
-colors = cm.viridis(np.linspace(0, 1, num_keys))
-
-# Generate the dictionary
-color_dict = {key: color for key, color in zip(data.keys(), colors)}
-# Create a new figure and axis
-fig, ax = plt.subplots()
-fig.set_size_inches(8, 6)
-
-number = 0
-transistor_img = image.imread(TRANSISTOR_FILE_NAME)
-for key in data.keys():
-    print(key)
-
+#showing the layers in matplotlib
+def show_circuit(data):
+    num_keys = 10000
+    fig, ax = plt.subplots()
+    fig.set_size_inches(8, 6)
+    colors = cm.viridis(np.linspace(0, 1, num_keys))
+    color_dict = {key: color for key, color in zip(data.keys(), colors)}
+    for key in data.keys():
+        vertices =  data[key]
     if key in ["TSP", "TM1", "TM2", "TSN"]:
         for vertice in data[key]:
             xycoords = (vertice[1], vertice[2])
             imagebox = OffsetImage(transistor_img, zoom = 0.01)
             ab = AnnotationBbox(imagebox, xycoords, frameon = False)
             ax.add_artist(ab)
-            
-        number = number + len(data[key])
-        print(number)
-        continue
-    for vertices in data[key]:
         xy = list(vertices.exterior.coords)
         if str(key)[0] != "C":
             polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor=color_dict[key], facecolor='none')
         else:
             polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor="red", facecolor='none')
-
         ax.add_patch(polygon)
+    ax.set_xlim(-10000, 10000)
+    ax.set_ylim(-10000, 10000)
+    plt.show()
 
 
-ax.set_xlim(-10000, 10000)
-ax.set_ylim(-10000, 10000)
+def convert_data_to_graph(data):
+    """
+    Переводит словарь многоугольников в граф.
+    :param data: входной словарь
+    :return: граф
+    """
+    graph = networkx.Graph()
+    for key in data.keys():
+        polygon = data[key]
+        graph.add_node(key, layer = polygon)
+        if str(key)[0] == "C":
+            connections = get_connections(polygon, key, data)
+            for connection in connections:
+                graph.add_edge(key, connection)
+    return graph
 
-imagebox = OffsetImage(transistor_img, zoom = 0.01)
-ab = AnnotationBbox(imagebox, (-83, -50), frameon = False)
-ax.add_artist(ab)
-# img = plt.imread(file)
-# ax.figure.figimage(img, 6707, 780,
-#                    alpha=0, zorder=3)
+data = read_file("sum.cif")
+transistors = {k: data.pop(k) for k in list(data.keys()) if any(k.startswith(prefix) for prefix in ["TSP", "TM1", "TM2", "TSN", "CW", "M2A"])}
 
+graph = convert_data_to_graph(data)
 
-# Show the plot
-plt.show()
+graph_2 = graph.copy()
+print(len(data.keys()))
+start = time.time()
+print(networkx.vf2pp_is_isomorphic(graph, graph_2))
+end = time.time()
 
-graph_1 = networkx.Graph()
+print(end-start)
 
-
-for key in data.keys():
-    num = 0
-    if key in ["TSP", "TM1", "TM2", "TSN"]:
-        continue
-    for polygon in data[key]:
-        try:
-            graph_1.add_node(str(num)+str(key), layer = polygon)
-        except Exception as e:
-            print(str(key)+str(num), polygon, e)
-        num = num+1
-
-print(graph_1.nodes)
-
-
-
-
+print(len(data.keys()))
+show_circuit(data)
 
