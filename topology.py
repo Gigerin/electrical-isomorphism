@@ -67,20 +67,21 @@ def get_connections(initial_polygon: Polygon, polygon_layer:str, data:dict):
 
 #showing the layers in matplotlib
 transistor_img = image.imread(TRANSISTOR_FILE_NAME)
-def show_circuit(data):
+def show_circuit(data, transistors):
     num_keys = 10000
     fig, ax = plt.subplots()
     fig.set_size_inches(8, 6)
     colors = cm.viridis(np.linspace(0, 1, num_keys))
     color_dict = {key: color for key, color in zip(data.keys(), colors)}
-    for key in data.keys():
-        vertices =  data[key]
-        if key in ["TSP", "TM1", "TM2", "TSN"]:
-            for vertice in data[key]:
-                xycoords = (vertice[1], vertice[2])
+    for key in transistors:
+        for prefix in ["TSP", "TM1", "TM2", "TSN"]:
+            if key.startswith(prefix):
+                xycoords = (transistors[key][1], transistors[key][2])
                 imagebox = OffsetImage(transistor_img, zoom = 0.01)
                 ab = AnnotationBbox(imagebox, xycoords, frameon = False)
                 ax.add_artist(ab)
+    for key in data.keys():
+        vertices =  data[key]
         xy = list(vertices.exterior.coords)
         if str(key)[0] != "C":
             polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor=color_dict[key], facecolor='none')
@@ -126,5 +127,5 @@ end = time.time()
 print(end-start)
 
 print(len(data.keys()))
-show_circuit(data)
+show_circuit(data, transistors)
 
