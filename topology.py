@@ -66,6 +66,7 @@ def get_connections(initial_polygon: Polygon, polygon_layer:str, data:dict):
 
 
 #showing the layers in matplotlib
+transistor_img = image.imread(TRANSISTOR_FILE_NAME)
 def show_circuit(data):
     num_keys = 10000
     fig, ax = plt.subplots()
@@ -86,9 +87,13 @@ def show_circuit(data):
         else:
             polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor="red", facecolor='none')
         ax.add_patch(polygon)
-    ax.set_xlim(-10000, 10000)
-    ax.set_ylim(-10000, 10000)
-    plt.show()
+
+
+ax.set_xlim(-10000, 10000)
+ax.set_ylim(-10000, 10000)
+
+# Show the plot
+plt.show()
 
 
 def convert_data_to_graph(data):
