@@ -31,6 +31,8 @@ def read_file(name):
                         polygon = []
                         for i in range(1, len(line_two), 2):
                             polygon.append((int(line_two[i].replace(";", "")), int(line_two[i+1].replace(";", ""))))
+                        if len(polygon) % 2 != 0:
+                            polygon.insert(len(polygon), (polygon[len(polygon)-1][0], polygon[0][1]))
                         result[layer_name].append(Polygon(polygon))
                     if line_two[0] == "4N":
                         if layer_name not in result.keys():
@@ -71,6 +73,8 @@ def show_circuit(data):
     for key in data.keys():
         for vertices in data[key]:
             xy = list(vertices.exterior.coords)
+            '''if len(xy) % 2 == 0:
+                xy.insert(len(xy)-1, (xy[len(xy)-2][0], xy[0][1]))'''
             if str(key)[0] != "C":
                 polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor=color_dict[key], facecolor='none')
             else:
