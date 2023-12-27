@@ -33,11 +33,11 @@ def read_file(name):
                             polygon.append((int(line_two[i].replace(";", "")), int(line_two[i+1].replace(";", ""))))
                         if len(polygon) % 2 != 0:
                             polygon.insert(len(polygon), (polygon[len(polygon)-1][0], polygon[0][1]))
-                        result[layer_name].append(Polygon(polygon))
+                        result[layer_name] = Polygon(polygon)
                     if line_two[0] == "4N":
                         if layer_name not in result.keys():
                             result[layer_name] = []
-                        result[layer_name].append([line_two[1], int(line_two[2]), int(line_two[3].replace(";",""))])
+                        result[layer_name] = [line_two[1], int(line_two[2]), int(line_two[3].replace(";",""))]
                         line_three = file.readline()
                 if curr_line[0] == "DS":
                     continue
@@ -56,10 +56,9 @@ def get_connections(initial_polygon: Polygon, polygon_layer:str, data:dict):
         if layer == polygon_layer:
             continue
         else:
-            polygons = data[layer]
-            for polygon in polygons:
-                if polygon.contains(initial_polygon):
-                    result.append(layer)
+            polygon = data[layer]
+            if polygon.contains(initial_polygon):
+                result.append(layer)
     return result
 
 
@@ -71,15 +70,13 @@ def show_circuit(data):
     colors = cm.viridis(np.linspace(0, 1, num_keys))
     color_dict = {key: color for key, color in zip(data.keys(), colors)}
     for key in data.keys():
-        for vertices in data[key]:
-            xy = list(vertices.exterior.coords)
-            '''if len(xy) % 2 == 0:
-                xy.insert(len(xy)-1, (xy[len(xy)-2][0], xy[0][1]))'''
-            if str(key)[0] != "C":
-                polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor=color_dict[key], facecolor='none')
-            else:
-                polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor="red", facecolor='none')
-            ax.add_patch(polygon)
+        vertices =  data[key]
+        xy = list(vertices.exterior.coords)
+        if str(key)[0] != "C":
+            polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor=color_dict[key], facecolor='none')
+        else:
+            polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor="red", facecolor='none')
+        ax.add_patch(polygon)
     ax.set_xlim(-10000, 10000)
     ax.set_ylim(-10000, 10000)
     plt.show()
@@ -93,12 +90,12 @@ def convert_data_to_graph(data):
     """
     graph = networkx.Graph()
     for key in data.keys():
-        for polygon in data[key]:
-            graph.add_node(key, layer = polygon)
-            if str(key)[0] == "C":
-                connections = get_connections(polygon, key, data)
-                for connection in connections:
-                    graph.add_edge(key, connection)
+        polygon = data[key]
+        graph.add_node(key, layer = polygon)
+        if str(key)[0] == "C":
+            connections = get_connections(polygon, key, data)
+            for connection in connections:
+                graph.add_edge(key, connection)
     return graph
 
 data = read_file("sum.cif")
