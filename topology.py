@@ -75,12 +75,12 @@ def show_circuit(data):
     color_dict = {key: color for key, color in zip(data.keys(), colors)}
     for key in data.keys():
         vertices =  data[key]
-    if key in ["TSP", "TM1", "TM2", "TSN"]:
-        for vertice in data[key]:
-            xycoords = (vertice[1], vertice[2])
-            imagebox = OffsetImage(transistor_img, zoom = 0.01)
-            ab = AnnotationBbox(imagebox, xycoords, frameon = False)
-            ax.add_artist(ab)
+        if key in ["TSP", "TM1", "TM2", "TSN"]:
+            for vertice in data[key]:
+                xycoords = (vertice[1], vertice[2])
+                imagebox = OffsetImage(transistor_img, zoom = 0.01)
+                ab = AnnotationBbox(imagebox, xycoords, frameon = False)
+                ax.add_artist(ab)
         xy = list(vertices.exterior.coords)
         if str(key)[0] != "C":
             polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor=color_dict[key], facecolor='none')
