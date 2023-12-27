@@ -5,11 +5,14 @@ import numpy as np
 import networkx
 import matplotlib.patches as patches
 import matplotlib
+from matplotlib.offsetbox import (OffsetImage, AnnotationBbox)
+import matplotlib.image as image
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from shapely.geometry import Polygon
 
+TRANSISTOR_FILE_NAME = "png-clipart-transistor-npn-electronics-electronic-symbol-symbol-miscellaneous-electronics.png"
 
 def read_file(name):
     result = {}
@@ -56,10 +59,17 @@ fig, ax = plt.subplots()
 fig.set_size_inches(8, 6)
 
 number = 0
+transistor_img = image.imread(TRANSISTOR_FILE_NAME)
 for key in data.keys():
     print(key)
 
     if key in ["TSP", "TM1", "TM2", "TSN"]:
+        for vertice in data[key]:
+            xycoords = (vertice[1], vertice[2])
+            imagebox = OffsetImage(transistor_img, zoom = 0.01)
+            ab = AnnotationBbox(imagebox, xycoords, frameon = False)
+            ax.add_artist(ab)
+            
         number = number + len(data[key])
         print(number)
         continue
@@ -75,6 +85,14 @@ for key in data.keys():
 
 ax.set_xlim(-10000, 10000)
 ax.set_ylim(-10000, 10000)
+
+imagebox = OffsetImage(transistor_img, zoom = 0.01)
+ab = AnnotationBbox(imagebox, (-83, -50), frameon = False)
+ax.add_artist(ab)
+# img = plt.imread(file)
+# ax.figure.figimage(img, 6707, 780,
+#                    alpha=0, zorder=3)
+
 
 # Show the plot
 plt.show()
