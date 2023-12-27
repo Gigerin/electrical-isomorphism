@@ -87,13 +87,13 @@ def show_circuit(data):
         else:
             polygon = patches.Polygon(xy, closed=True, linewidth=1, edgecolor="red", facecolor='none')
         ax.add_patch(polygon)
+    ax.set_xlim(-10000, 10000)
+    ax.set_ylim(-10000, 10000)
+
+    # Show the plot
+    plt.show()
 
 
-ax.set_xlim(-10000, 10000)
-ax.set_ylim(-10000, 10000)
-
-# Show the plot
-plt.show()
 
 
 def convert_data_to_graph(data):
