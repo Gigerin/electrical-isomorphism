@@ -4,20 +4,23 @@ import itertools
 import numpy as np
 import networkx
 
+
 @dataclass
 class Transistor:
     name: str
     connections: tuple[str, str, str, str]
     type: str
 
+
 @dataclass(frozen=True)
 class Node:
     name: str
     type: str
 
+
 def read_file(name):
     result = []
-    with open("source/"+name, "r") as file:
+    with open("source/" + name, "r") as file:
         program_name = file.readline()
         while True:
             line = file.readline()
@@ -31,6 +34,7 @@ def read_file(name):
             result.append(new_transistor)
     return result
 
+
 def add_my_edge(graph, node_1, node_2, weight=1):
     if node_2 not in graph.nodes:
         node_2_obj = Node(node_2, type="connection")
@@ -40,6 +44,7 @@ def add_my_edge(graph, node_1, node_2, weight=1):
     else:
         graph.add_edge(node_2, node_1)
         graph.add_edge(node_1, node_2)
+
 
 def data_to_graph(raw_data):
     graph = networkx.Graph()
@@ -51,17 +56,14 @@ def data_to_graph(raw_data):
     return graph
 
 
-#читаем данные, переводим их в нужные типы
+# читаем данные, переводим их в нужные типы
 raw_data_1 = read_file("source.txt")
-#читаем данные, переводим их в нужные типы
+# читаем данные, переводим их в нужные типы
 raw_data_2 = read_file("source2.txt")
-#переводим данные в формат словаря в графе
+# переводим данные в формат словаря в графе
 graph_1 = data_to_graph(raw_data_1)
-#переводим данные в формат словаря в графе
+# переводим данные в формат словаря в графе
 graph_2 = data_to_graph(raw_data_2)
 
-#TODO добавить проверку совпадений типов транзисторов
+# TODO добавить проверку совпадений типов транзисторов
 print(networkx.vf2pp_is_isomorphic(graph_1, graph_2))
-
-
-
