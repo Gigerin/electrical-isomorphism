@@ -12,12 +12,12 @@ import matplotlib.cm as cm
 from shapely.geometry import Polygon
 import time
 
-TRANSISTOR_FILE_NAME = "png-clipart-transistor-npn-electronics-electronic-symbol-symbol-miscellaneous-electronics.png"
+TRANSISTOR_FILE_NAME = "static/png-clipart-transistor-npn-electronics-electronic-symbol-symbol-miscellaneous-electronics.png"
 
 def read_file(name):
     result = {}
     number = 0
-    with open(name, "r") as file:
+    with open("source/"+name, "r") as file:
         program_name = file.readline()
         while True:
             line_one = file.readline()
@@ -119,7 +119,7 @@ transistors = {k: data.pop(k) for k in list(data.keys()) if any(k.startswith(pre
 graph = convert_data_to_graph(data)
 
 graph_2 = graph.copy()
-print(len(data.keys()))
+print(len(graph.nodes))
 start = time.time()
 print(networkx.vf2pp_is_isomorphic(graph, graph_2))
 end = time.time()

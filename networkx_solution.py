@@ -17,7 +17,7 @@ class Node:
 
 def read_file(name):
     result = []
-    with open(name, "r") as file:
+    with open("source/"+name, "r") as file:
         program_name = file.readline()
         while True:
             line = file.readline()
