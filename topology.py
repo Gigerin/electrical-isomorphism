@@ -106,12 +106,14 @@ def convert_data_to_graph(data):
     graph = networkx.Graph()
     for key in data.keys():
         polygon = data[key]
-        graph.add_node(key, layer = polygon)
         if str(key)[0] == "C":
             connections = get_connections(polygon, key, data)
-            for connection in connections:
-                graph.add_edge(key, connection)
+            graph.add_edge(connections[0], connections[1])
+            continue
+        graph.add_node(key, layer=polygon)
     return graph
+
+
 
 data = read_file("sum.cif")
 transistors = {k: data.pop(k) for k in list(data.keys()) if any(k.startswith(prefix) for prefix in ["TSP", "TM1", "TM2", "TSN", "CW", "M2A"])}
