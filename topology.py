@@ -146,7 +146,9 @@ graph = convert_data_to_graph(data)
 
 graph_2 = graph.copy()
 graph_2.add_edge("TM11", "TM12")
-print(len(graph.nodes))
+graph_2.remove_edge("SI14", "M115")
+
+print(len(data.keys()))
 start = time.time()
 print(networkx.vf2pp_is_isomorphic(graph, graph_2))
 end = time.time()
@@ -154,4 +156,23 @@ end = time.time()
 print(end - start)
 
 print(len(data.keys()))
+
+promezh = {}
+
+keys = data.keys()
+for key in keys:
+    layer_name = ""
+    for letter in key:
+        if "0"<letter<"9":
+            break
+        else:
+            layer_name += letter
+    if layer_name in promezh:
+        promezh[layer_name] += 1
+    else:
+        promezh[layer_name] = 1
+print(promezh)
+
+
+
 show_circuit(data, transistors)
