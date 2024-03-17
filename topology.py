@@ -134,8 +134,11 @@ def convert_data_to_graph(data):
         graph.add_node(key, layer=polygon)
     return graph
 
+file_name = input("Please enter name of file(blank for default):")
+if not file_name:
+    file_name = "sum.cif"
+data = read_file(file_name)
 
-data = read_file("sum.cif")
 transistors = {
     k: data.pop(k)
     for k in list(data.keys())
@@ -145,8 +148,6 @@ transistors = {
 graph = convert_data_to_graph(data)
 
 graph_2 = graph.copy()
-graph_2.add_edge("TM11", "TM12")
-graph_2.remove_edge("SI14", "M115")
 
 print(len(data.keys()))
 start = time.time()
@@ -173,6 +174,7 @@ for key in keys:
         promezh[layer_name] = 1
 print(promezh)
 
-
+networkx.draw(graph, with_labels = True)
+plt.show()
 
 show_circuit(data, transistors)
