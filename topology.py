@@ -4,6 +4,7 @@ import matplotlib.patches as patches
 import matplotlib
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.image as image
+from dataclasses import dataclass
 
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
@@ -12,6 +13,62 @@ from shapely.geometry import Polygon
 import time
 
 TRANSISTOR_FILE_NAME = "static/png-clipart-transistor-npn-electronics-electronic-symbol-symbol-miscellaneous-electronics.png"
+
+
+@dataclass(frozen=True)
+class n_transistor:
+    SP_layer: Polygon
+    NA_layer: Polygon
+
+@dataclass(frozen=True)
+class p_transistor:
+    P_layer: Polygon
+    SN_layer: Polygon
+    NA_layer: Polygon
+def convert_list_to_poly(list):
+    polygon = []
+    for i in range(1, len(list)-1, 2):
+        polygon.append(
+            (
+                int(list[i].replace(";", "")),
+                int(list[i + 1].replace(";", "")),
+            )
+        )
+    return Polygon(polygon)
+
+def read_file_to_list(name):
+    number = 1
+    result = {}
+    with open("source/" + name, 'r') as f:
+        while True:
+            line = f.readline().split()
+            if line:
+                if line[0] == "DS":
+                    f.readline()
+                    break
+        while True:
+            first_line = f.readline().split()
+            if first_line[0] == "DF;":
+                break
+            if first_line[0] == "L":
+                if first_line[1] == "SP;":
+                    read_n_transistor(f, result, number)
+            number += 1
+
+    return result
+
+
+def read_n_transistor(file, data:dict, number):
+    second_line = file.readline().split()
+    third_line = file.readline().split()
+    fourth_line = file.readline().split()
+    if third_line[1] != "NA;":
+        print("I SHIT")
+    sp_poly = convert_list_to_poly(second_line[1:])
+    na_poly = convert_list_to_poly(fourth_line[1:])
+    transistor = n_transistor(sp_poly, na_poly)
+    data["n_transistor"+str(number)] = transistor
+
 
 
 def read_file(name):
@@ -54,8 +111,8 @@ def read_file(name):
                             int(line_two[3].replace(";", "")),
                         ]
                         line_three = file.readline()
-                if curr_line[0] == "DS":
-                    continue
+                if curr_line[0] == "DS" and curr_line[1] == "100":
+                    break
             number = number + 1
     return result
 
@@ -98,7 +155,7 @@ def show_circuit(data, transistors):
     for key in data.keys():
         vertices = data[key]
         xy = list(vertices.exterior.coords)
-        if str(key)[0] != "C":
+        if str(key)[:2] != "SP":
             polygon = patches.Polygon(
                 xy,
                 closed=True,
@@ -125,20 +182,28 @@ def convert_data_to_graph(data):
     :return: граф
     """
     graph = networkx.Graph()
-    for key in data.keys():
+    sorted_polygons = sorted(data.keys(), key=lambda polygon: data[polygon].area)
+    print(sorted_polygons)
+    for key in sorted_polygons:
         polygon = data[key]
         if str(key)[0] == "C":
             connections = get_connections(polygon, key, data)
             graph.add_edge(connections[0], connections[1])
             continue
-        graph.add_node(key, layer=polygon)
+        if str(key)[0] == "P":
+            connections = get_connections(polygon, key, data)
+            pass
+    for key in data.keys():
+        if data[key] not in graph.nodes:
+            graph.add_node(key, layer=polygon)
     return graph
 
 file_name = input("Please enter name of file(blank for default):")
 if not file_name:
     file_name = "sum.cif"
 data = read_file(file_name)
-
+data = read_file_to_list(file_name)
+print(data)
 transistors = {
     k: data.pop(k)
     for k in list(data.keys())
