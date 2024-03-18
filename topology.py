@@ -29,8 +29,13 @@ class p_transistor:
 
 
 def convert_list_to_poly(list):
+    """
+    Конвертируем список точек формата cif в формат многоугольников
+    :param list:
+    :return:
+    """
     polygon = []
-    for i in range(1, len(list)-1, 2):
+    for i in range(1, len(list) - 1, 2):
         polygon.append(
             (
                 int(list[i].replace(";", "")),
@@ -39,11 +44,20 @@ def convert_list_to_poly(list):
         )
     return Polygon(polygon)
 
+
 def read_file_to_list(name):
+    """
+    Основная функция отвечающая за парсинг файла и его обработку в формат полигонов
+    Берется строка. Если она начинается на какую-то из комбинаций, которые описаны в readme.md
+    то она обрабатывается как отдельный элемент схемы типа транзистора. Иначе, строка добавляется
+    в garbage_list(временное решение проблемы. в идеале этот список мусора будет пуст)
+    :param name:
+    :return:
+    """
     number = 1
     result = {}
     garbage_list = []
-    with open("source/" + name, 'r') as f:
+    with open("source/" + name, "r") as f:
         while True:
             line = f.readline().split()
             if line:
@@ -69,25 +83,42 @@ def read_file_to_list(name):
                     else:
                         f.seek(last_pos)
                         print("I SHIT")
-                        garbage_list.append([first_line, second_line, third_line, fourth_line])
-
+                        garbage_list.append(
+                            [first_line, second_line, third_line, fourth_line]
+                        )
 
             number += 1
     print(garbage_list)
     return result
 
 
-def read_n_transistor(file, data:dict, number):
+def read_n_transistor(file, data: dict, number):
+    """
+    программа добавления строк в качестве n транзистора
+    :param file:
+    :param data:
+    :param number:
+    :return:
+    """
     second_line = file.readline().split()
     third_line = file.readline().split()
     fourth_line = file.readline().split()
     sp_poly = convert_list_to_poly(second_line[1:])
     na_poly = convert_list_to_poly(fourth_line[1:])
     transistor = n_transistor(sp_poly, na_poly)
-    data["n_transistor"+str(number)] = transistor
+    data["n_transistor" + str(number)] = transistor
     return transistor
 
-def read_p_transistor(file, data:dict, number, *extra_line):
+
+def read_p_transistor(file, data: dict, number, *extra_line):
+    """
+    программа добавления строк на случай p транзистора
+    :param file:
+    :param data:
+    :param number:
+    :param extra_line:
+    :return:
+    """
     sn_layer = file.readline().split()
     na = file.readline().split()
     na_layer = file.readline().split()
@@ -95,8 +126,7 @@ def read_p_transistor(file, data:dict, number, *extra_line):
     sn_poly = convert_list_to_poly(sn_layer[1:])
     na_poly = convert_list_to_poly(na_layer[1:])
     transistor = p_transistor(p_poly, sn_poly, na_poly)
-    data["p_transistor"+str(number)] = transistor
-
+    data["p_transistor" + str(number)] = transistor
 
 
 def read_file(name):
@@ -225,6 +255,7 @@ def convert_data_to_graph(data):
         if data[key] not in graph.nodes:
             graph.add_node(key, layer=polygon)
     return graph
+
 
 file_name = input("Please enter name of file(blank for default):")
 if not file_name:
