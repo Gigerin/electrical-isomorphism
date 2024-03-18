@@ -57,21 +57,19 @@ def read_file_to_list(name):
             if first_line[0] == "L":
                 if first_line[1] == "SN;":
                     read_n_transistor(f, result, number)
-                    continue
-                if first_line[1] == "P;":
+                if first_line[1] == "SP;":
                     last_pos = f.tell()
                     second_line = f.readline().split()
                     third_line = f.readline().split()
                     fourth_line = f.readline().split()
-                    if third_line[1] == "SP;":
+                    if third_line[1] == "NA;":
+                        f.readline().split()
                         read_p_transistor(f, result, number, second_line)
                         continue
                     else:
                         f.seek(last_pos)
                         print("I SHIT")
                         garbage_list.append([first_line, second_line, third_line, fourth_line])
-            second_line = f.readline().split()
-            garbage_list.append([first_line, second_line])
 
 
             number += 1
@@ -90,11 +88,9 @@ def read_n_transistor(file, data:dict, number):
     return transistor
 
 def read_p_transistor(file, data:dict, number, *extra_line):
-    print(extra_line)
     sn_layer = file.readline().split()
     na = file.readline().split()
     na_layer = file.readline().split()
-
     p_poly = convert_list_to_poly(extra_line[0][1:])
     sn_poly = convert_list_to_poly(sn_layer[1:])
     na_poly = convert_list_to_poly(na_layer[1:])
