@@ -27,6 +27,27 @@ class p_transistor:
     SP_layer: Polygon
     NA_layer: Polygon
 
+@dataclass(frozen=True, eq=False)
+class b_contact:
+    CPA_layer: Polygon
+    NA_layer: Polygon
+    M1_layer: Polygon
+    P_layer: Polygon
+    CPA_layer2: Polygon
+    NA_layer2: Polygon
+    M1_layer2: Polygon
+    P_layer2: Polygon
+    M1_layer3: Polygon
+
+@dataclass(frozen=True, eq=False)
+class r_contact:
+    CNA_layer: Polygon
+    NA_layer: Polygon
+    M1_layer: Polygon
+    CNA_layer2: Polygon
+    NA_layer2: Polygon
+    M1_layer2: Polygon
+    M1_layer3: Polygon
 
 def convert_list_to_poly(list):
     """
@@ -43,6 +64,61 @@ def convert_list_to_poly(list):
             )
         )
     return Polygon(polygon)
+
+
+def read_n_transistor(file, data: dict, number):
+    """
+    программа добавления строк в качестве n транзистора
+    :param file:
+    :param data:
+    :param number:
+    :return:
+    """
+    second_line = file.readline().split()
+    third_line = file.readline().split()
+    fourth_line = file.readline().split()
+    sp_poly = convert_list_to_poly(second_line[1:])
+    na_poly = convert_list_to_poly(fourth_line[1:])
+    transistor = n_transistor(sp_poly, na_poly)
+    data["n_transistor" + str(number)] = transistor
+    return transistor
+
+
+def read_p_transistor(file, data: dict, number, *extra_line):
+    """
+    программа добавления строк на случай p транзистора
+    :param file:
+    :param data:
+    :param number:
+    :param extra_line:
+    :return:
+    """
+    sn_layer = file.readline().split()
+    na = file.readline().split()
+    na_layer = file.readline().split()
+    p_poly = convert_list_to_poly(extra_line[0][1:])
+    sn_poly = convert_list_to_poly(sn_layer[1:])
+    na_poly = convert_list_to_poly(na_layer[1:])
+    transistor = p_transistor(p_poly, sn_poly, na_poly)
+    data["p_transistor" + str(number)] = transistor
+
+def read_r_contact(file, data, number):
+    polygons = []
+    for i in range(6):
+        polygons.append(file.readline().strip())
+        file.readline()
+    polygons.append(file.readline().strip())
+    contact = r_contact(*polygons)
+    data["r_contact" + str(number)] = contact
+
+def read_b_contact(file, data, number):
+    polygons = []
+    for i in range(8):
+        polygons.append(file.readline().strip())
+        file.readline()
+    polygons.append(file.readline().strip())
+    contact = b_contact(*polygons)
+    data["b_contact" + str(number)] = contact
 
 
 def read_file_to_list(name):
@@ -86,50 +162,22 @@ def read_file_to_list(name):
                         garbage_list.append(
                             [first_line, second_line, third_line, fourth_line]
                         )
+                if first_line[1] == "CNA;":
+                    read_r_contact(f, result, number)
+                    continue
+                if first_line[1] == "CPA;":
+                    read_b_contact(f, result, number)
+                    continue
 
             second_line = f.readline().split()
             garbage_list.append([first_line, second_line])
 
             number += 1
     print(garbage_list)
+    print(len(garbage_list))
     return result
 
 
-def read_n_transistor(file, data: dict, number):
-    """
-    программа добавления строк в качестве n транзистора
-    :param file:
-    :param data:
-    :param number:
-    :return:
-    """
-    second_line = file.readline().split()
-    third_line = file.readline().split()
-    fourth_line = file.readline().split()
-    sp_poly = convert_list_to_poly(second_line[1:])
-    na_poly = convert_list_to_poly(fourth_line[1:])
-    transistor = n_transistor(sp_poly, na_poly)
-    data["n_transistor" + str(number)] = transistor
-    return transistor
-
-
-def read_p_transistor(file, data: dict, number, *extra_line):
-    """
-    программа добавления строк на случай p транзистора
-    :param file:
-    :param data:
-    :param number:
-    :param extra_line:
-    :return:
-    """
-    sn_layer = file.readline().split()
-    na = file.readline().split()
-    na_layer = file.readline().split()
-    p_poly = convert_list_to_poly(extra_line[0][1:])
-    sn_poly = convert_list_to_poly(sn_layer[1:])
-    na_poly = convert_list_to_poly(na_layer[1:])
-    transistor = p_transistor(p_poly, sn_poly, na_poly)
-    data["p_transistor" + str(number)] = transistor
 
 
 def read_file(name):
