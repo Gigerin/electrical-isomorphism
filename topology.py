@@ -82,10 +82,13 @@ def read_file_to_list(name):
                         continue
                     else:
                         f.seek(last_pos)
-                        print("I SHIT")
+                        print("I SHIT ")
                         garbage_list.append(
                             [first_line, second_line, third_line, fourth_line]
                         )
+
+            second_line = f.readline().split()
+            garbage_list.append([first_line, second_line])
 
             number += 1
     print(garbage_list)

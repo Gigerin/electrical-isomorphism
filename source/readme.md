@@ -6,6 +6,10 @@
 ![img_1.png](pics/img_1.png)
 * 1_red - 1 красный
 ![img_2.png](pics/img_2.png)
+* 1_red_con - одинарное красное соединение
+![img.png](img.png)
+* 1_blue_con - одинарное синее соединение
+![img_1.png](img_1.png)
 
 
 А тут будут расписаны находки Гейдара:
