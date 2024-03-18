@@ -15,16 +15,19 @@ import time
 TRANSISTOR_FILE_NAME = "static/png-clipart-transistor-npn-electronics-electronic-symbol-symbol-miscellaneous-electronics.png"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class n_transistor:
+    SN_layer: Polygon
+    NA_layer: Polygon
+
+
+@dataclass(frozen=True, eq=False)
+class p_transistor:
+    P_layer: Polygon
     SP_layer: Polygon
     NA_layer: Polygon
 
-@dataclass(frozen=True)
-class p_transistor:
-    P_layer: Polygon
-    SN_layer: Polygon
-    NA_layer: Polygon
+
 def convert_list_to_poly(list):
     polygon = []
     for i in range(1, len(list)-1, 2):
@@ -39,6 +42,7 @@ def convert_list_to_poly(list):
 def read_file_to_list(name):
     number = 1
     result = {}
+    garbage_list = []
     with open("source/" + name, 'r') as f:
         while True:
             line = f.readline().split()
@@ -51,10 +55,27 @@ def read_file_to_list(name):
             if first_line[0] == "DF;":
                 break
             if first_line[0] == "L":
-                if first_line[1] == "SP;":
+                if first_line[1] == "SN;":
                     read_n_transistor(f, result, number)
-            number += 1
+                    continue
+                if first_line[1] == "P;":
+                    last_pos = f.tell()
+                    second_line = f.readline().split()
+                    third_line = f.readline().split()
+                    fourth_line = f.readline().split()
+                    if third_line[1] == "SP;":
+                        read_p_transistor(f, result, number, second_line)
+                        continue
+                    else:
+                        f.seek(last_pos)
+                        print("I SHIT")
+                        garbage_list.append([first_line, second_line, third_line, fourth_line])
+            second_line = f.readline().split()
+            garbage_list.append([first_line, second_line])
 
+
+            number += 1
+    print(garbage_list)
     return result
 
 
@@ -62,12 +83,23 @@ def read_n_transistor(file, data:dict, number):
     second_line = file.readline().split()
     third_line = file.readline().split()
     fourth_line = file.readline().split()
-    if third_line[1] != "NA;":
-        print("I SHIT")
     sp_poly = convert_list_to_poly(second_line[1:])
     na_poly = convert_list_to_poly(fourth_line[1:])
     transistor = n_transistor(sp_poly, na_poly)
     data["n_transistor"+str(number)] = transistor
+    return transistor
+
+def read_p_transistor(file, data:dict, number, *extra_line):
+    print(extra_line)
+    sn_layer = file.readline().split()
+    na = file.readline().split()
+    na_layer = file.readline().split()
+
+    p_poly = convert_list_to_poly(extra_line[0][1:])
+    sn_poly = convert_list_to_poly(sn_layer[1:])
+    na_poly = convert_list_to_poly(na_layer[1:])
+    transistor = p_transistor(p_poly, sn_poly, na_poly)
+    data["p_transistor"+str(number)] = transistor
 
 
 
@@ -201,9 +233,11 @@ def convert_data_to_graph(data):
 file_name = input("Please enter name of file(blank for default):")
 if not file_name:
     file_name = "sum.cif"
-data = read_file(file_name)
 data = read_file_to_list(file_name)
 print(data)
+print(data.keys())
+
+"""
 transistors = {
     k: data.pop(k)
     for k in list(data.keys())
@@ -243,3 +277,4 @@ networkx.draw(graph, with_labels = True)
 plt.show()
 
 show_circuit(data, transistors)
+"""
