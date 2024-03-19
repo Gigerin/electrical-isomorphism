@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 import networkx
 import matplotlib.patches as patches
@@ -5,7 +6,7 @@ import matplotlib
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.image as image
 from util import *
-
+from dataclasses import fields, asdict
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -14,31 +15,44 @@ import time
 
 TRANSISTOR_FILE_NAME = "static/png-clipart-transistor-npn-electronics-electronic-symbol-symbol-miscellaneous-electronics.png"
 
-
-
-
-
-
-def get_connections(initial_polygon: Polygon, polygon_layer: str, data: dict):
-    """
-    :param initial_polygon: Исходный квадратик контактный
-    :param polygon_layer: Слой квадратика
-    :param data: данные о всех слоях
-    :return: возвращает, между какими слоями и изначальным слоем надо дать ребро, список
-    """
-    result = []
-    for layer in data.keys():
-        if layer == polygon_layer:
-            continue
-        else:
-            polygon = data[layer]
-            if polygon.contains(initial_polygon):
-                result.append(layer)
-    return result
-
-
 # showing the layers in matplotlib
 transistor_img = image.imread(TRANSISTOR_FILE_NAME)
+
+
+def two_comp_intersect(comp1, comp2):
+    """
+    check if two components are intersected
+    :param comp1:
+    :param comp2:
+    :return:
+    """
+    comp1 = asdict(comp1).values() #TODO РЅРµСЌС„С„РµРєС‚РёРІРЅРѕ РєР°Р¶РґС‹Р№ СЂР°Р· РІСЃРµ РІ СЃР»РѕРІР°СЂСЊ РїРµСЂРµРІРѕРґРёС‚СЊ.
+    comp2 = asdict(comp2).values()
+    for poly1 in comp1:
+        for poly2 in comp2:
+            if poly1.contains(poly2) or poly2.contains(poly1):
+                return True
+    return False
+
+
+def convert_dict_to_graph(dict):
+    """
+    РљРѕРЅРІРµСЂС‚РёСЂСѓРµРј СЃРїРёСЃРѕРє РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РІ РіСЂР°С„
+    :param dict:
+    :return:
+    """
+    graph = networkx.Graph()
+    graph.add_nodes_from(dict.keys())
+    for comp1 in dict.keys():
+        for comp2 in dict.keys():
+            if comp1 == comp2:
+                continue
+            if two_comp_intersect(dict[comp1], dict[comp2]):#TODO РЅРµРєРѕС‚РѕСЂС‹Рµ РїР°СЂС‹ РјС‹ РїСЂРѕС…РѕРґРёРј РґРІР°Р¶РґС‹, РЅРµСЌС„С„РµРєС‚РёРІРЅРѕ
+                graph.add_edge(comp1, comp2)
+                graph.add_edge(comp2, comp1)
+    print(len(graph.nodes))
+    print(len(graph.edges))
+
 
 
 
@@ -46,5 +60,6 @@ file_name = input("Please enter name of file(blank for default):")
 if not file_name:
     file_name = "sum.cif"
 data = read_file_to_list(file_name)
+print("DATA")
 print(data)
 print(data.keys())
