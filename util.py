@@ -63,7 +63,7 @@ def convert_list_to_poly(list):
     :return:
     """
     polygon = []
-    for i in range(1, len(list) - 1, 2):
+    for i in range(0, len(list), 2):
         polygon.append(
             (
                 int(list[i].replace(";", "")),
@@ -198,6 +198,7 @@ def read_file_to_list(name):
             layer_poly = f.readline().replace(";", "").split()
             if layer_name[0] == "DF" or layer_poly[0] == "DF":
                 break
+            f.seek(last_pos)
             for i in range(9):
                 layer_names = layer_names + get_line(f)[-1:]
                 layer_polys.append(get_line(f))
