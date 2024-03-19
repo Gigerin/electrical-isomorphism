@@ -213,40 +213,4 @@ def read_file_to_list(name):
             number += 1
             layer_names = []
             layer_polys = []
-    print(garbage_list)
-    print(len(garbage_list))
     return result
-
-"""
-           if first_line[0] == "DF;":
-                break
-            if first_line[0] == "L":
-                if first_line[1] == "SN;":
-                    read_n_transistor(f, result, number)
-                if first_line[1] == "SP;": #TODO Fix this shit
-                    last_pos = f.tell()
-                    second_line = f.readline().split()
-                    third_line = f.readline().split()
-                    fourth_line = f.readline().split()
-                    if third_line[1] == "NA;":
-                        f.readline().split()
-                        read_p_transistor(f, result, number, second_line)
-                        continue
-                    else:
-                        f.seek(last_pos)
-                        print("I SHIT ")
-                        garbage_list.append(
-                            [first_line, second_line, third_line, fourth_line]
-                        )
-                if first_line[1] == "CNA;":
-                    read_r_contact(f, result, number)
-                    continue
-                if first_line[1] == "CPA;":
-                    read_b_contact(f, result, number)
-                    continue
-
-            second_line = f.readline().split()
-            garbage_list.append([first_line, second_line])
-
-"""
-print(read_file_to_list("sum.txt"))
