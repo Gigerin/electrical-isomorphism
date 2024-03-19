@@ -4,6 +4,7 @@ import matplotlib.patches as patches
 import matplotlib
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.image as image
+from dataclasses import dataclass
 
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
@@ -12,6 +13,171 @@ from shapely.geometry import Polygon
 import time
 
 TRANSISTOR_FILE_NAME = "static/png-clipart-transistor-npn-electronics-electronic-symbol-symbol-miscellaneous-electronics.png"
+
+
+@dataclass(frozen=True, eq=False)
+class n_transistor:
+    SN_layer: Polygon
+    NA_layer: Polygon
+
+
+@dataclass(frozen=True, eq=False)
+class p_transistor:
+    P_layer: Polygon
+    SP_layer: Polygon
+    NA_layer: Polygon
+
+@dataclass(frozen=True, eq=False)
+class b_contact:
+    CPA_layer: Polygon
+    NA_layer: Polygon
+    M1_layer: Polygon
+    P_layer: Polygon
+    CPA_layer2: Polygon
+    NA_layer2: Polygon
+    M1_layer2: Polygon
+    P_layer2: Polygon
+    M1_layer3: Polygon
+
+@dataclass(frozen=True, eq=False)
+class r_contact:
+    CNA_layer: Polygon
+    NA_layer: Polygon
+    M1_layer: Polygon
+    CNA_layer2: Polygon
+    NA_layer2: Polygon
+    M1_layer2: Polygon
+    M1_layer3: Polygon
+
+def convert_list_to_poly(list):
+    """
+    Конвертируем список точек формата cif в формат многоугольников
+    :param list:
+    :return:
+    """
+    polygon = []
+    for i in range(1, len(list) - 1, 2):
+        polygon.append(
+            (
+                int(list[i].replace(";", "")),
+                int(list[i + 1].replace(";", "")),
+            )
+        )
+    return Polygon(polygon)
+
+
+def read_n_transistor(file, data: dict, number):
+    """
+    программа добавления строк в качестве n транзистора
+    :param file:
+    :param data:
+    :param number:
+    :return:
+    """
+    second_line = file.readline().split()
+    third_line = file.readline().split()
+    fourth_line = file.readline().split()
+    sp_poly = convert_list_to_poly(second_line[1:])
+    na_poly = convert_list_to_poly(fourth_line[1:])
+    transistor = n_transistor(sp_poly, na_poly)
+    data["n_transistor" + str(number)] = transistor
+    return transistor
+
+
+def read_p_transistor(file, data: dict, number, *extra_line):
+    """
+    программа добавления строк на случай p транзистора
+    :param file:
+    :param data:
+    :param number:
+    :param extra_line:
+    :return:
+    """
+    sn_layer = file.readline().split()
+    na = file.readline().split()
+    na_layer = file.readline().split()
+    p_poly = convert_list_to_poly(extra_line[0][1:])
+    sn_poly = convert_list_to_poly(sn_layer[1:])
+    na_poly = convert_list_to_poly(na_layer[1:])
+    transistor = p_transistor(p_poly, sn_poly, na_poly)
+    data["p_transistor" + str(number)] = transistor
+
+def read_r_contact(file, data, number):
+    polygons = []
+    for i in range(6):
+        polygons.append(file.readline().strip())
+        file.readline()
+    polygons.append(file.readline().strip())
+    contact = r_contact(*polygons)
+    data["r_contact" + str(number)] = contact
+
+def read_b_contact(file, data, number):
+    polygons = []
+    for i in range(8):
+        polygons.append(file.readline().strip())
+        file.readline()
+    polygons.append(file.readline().strip())
+    contact = b_contact(*polygons)
+    data["b_contact" + str(number)] = contact
+
+
+def read_file_to_list(name):
+    """
+    Основная функция отвечающая за парсинг файла и его обработку в формат полигонов
+    Берется строка. Если она начинается на какую-то из комбинаций, которые описаны в readme.md
+    то она обрабатывается как отдельный элемент схемы типа транзистора. Иначе, строка добавляется
+    в garbage_list(временное решение проблемы. в идеале этот список мусора будет пуст)
+    :param name:
+    :return:
+    """
+    number = 1
+    result = {}
+    garbage_list = []
+    with open("source/" + name, "r") as f:
+        while True:
+            line = f.readline().split()
+            if line:
+                if line[0] == "DS":
+                    f.readline()
+                    break
+        while True:
+            first_line = f.readline().split()
+            if first_line[0] == "DF;":
+                break
+            if first_line[0] == "L":
+                if first_line[1] == "SN;":
+                    read_n_transistor(f, result, number)
+                if first_line[1] == "SP;":
+                    last_pos = f.tell()
+                    second_line = f.readline().split()
+                    third_line = f.readline().split()
+                    fourth_line = f.readline().split()
+                    if third_line[1] == "NA;":
+                        f.readline().split()
+                        read_p_transistor(f, result, number, second_line)
+                        continue
+                    else:
+                        f.seek(last_pos)
+                        print("I SHIT ")
+                        garbage_list.append(
+                            [first_line, second_line, third_line, fourth_line]
+                        )
+                if first_line[1] == "CNA;":
+                    read_r_contact(f, result, number)
+                    continue
+                if first_line[1] == "CPA;":
+                    read_b_contact(f, result, number)
+                    continue
+
+            second_line = f.readline().split()
+            garbage_list.append([first_line, second_line])
+
+            number += 1
+    print(garbage_list)
+    print(len(garbage_list))
+    return result
+
+
 
 
 def read_file(name):
@@ -54,8 +220,8 @@ def read_file(name):
                             int(line_two[3].replace(";", "")),
                         ]
                         line_three = file.readline()
-                if curr_line[0] == "DS":
-                    continue
+                if curr_line[0] == "DS" and curr_line[1] == "100":
+                    break
             number = number + 1
     return result
 
@@ -98,7 +264,7 @@ def show_circuit(data, transistors):
     for key in data.keys():
         vertices = data[key]
         xy = list(vertices.exterior.coords)
-        if str(key)[0] != "C":
+        if str(key)[:2] != "SP":
             polygon = patches.Polygon(
                 xy,
                 closed=True,
@@ -125,17 +291,31 @@ def convert_data_to_graph(data):
     :return: граф
     """
     graph = networkx.Graph()
-    for key in data.keys():
+    sorted_polygons = sorted(data.keys(), key=lambda polygon: data[polygon].area)
+    print(sorted_polygons)
+    for key in sorted_polygons:
         polygon = data[key]
         if str(key)[0] == "C":
             connections = get_connections(polygon, key, data)
             graph.add_edge(connections[0], connections[1])
             continue
-        graph.add_node(key, layer=polygon)
+        if str(key)[0] == "P":
+            connections = get_connections(polygon, key, data)
+            pass
+    for key in data.keys():
+        if data[key] not in graph.nodes:
+            graph.add_node(key, layer=polygon)
     return graph
 
 
-data = read_file("sum.cif")
+file_name = input("Please enter name of file(blank for default):")
+if not file_name:
+    file_name = "sum.cif"
+data = read_file_to_list(file_name)
+print(data)
+print(data.keys())
+
+"""
 transistors = {
     k: data.pop(k)
     for k in list(data.keys())
@@ -145,8 +325,8 @@ transistors = {
 graph = convert_data_to_graph(data)
 
 graph_2 = graph.copy()
-graph_2.add_edge("TM11", "TM12")
-print(len(graph.nodes))
+
+print(len(data.keys()))
 start = time.time()
 print(networkx.vf2pp_is_isomorphic(graph, graph_2))
 end = time.time()
@@ -154,4 +334,25 @@ end = time.time()
 print(end - start)
 
 print(len(data.keys()))
+
+promezh = {}
+
+keys = data.keys()
+for key in keys:
+    layer_name = ""
+    for letter in key:
+        if "0"<letter<"9":
+            break
+        else:
+            layer_name += letter
+    if layer_name in promezh:
+        promezh[layer_name] += 1
+    else:
+        promezh[layer_name] = 1
+print(promezh)
+
+networkx.draw(graph, with_labels = True)
+plt.show()
+
 show_circuit(data, transistors)
+"""
