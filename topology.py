@@ -14,7 +14,10 @@ import time
 
 TRANSISTOR_FILE_NAME = "static/png-clipart-transistor-npn-electronics-electronic-symbol-symbol-miscellaneous-electronics.png"
 
-
+"""
+BAD FILE DO NOT USE 
+NOT FOR PRODUCTION
+"""
 @dataclass(frozen=True, eq=False)
 class n_transistor:
     SN_layer: Polygon

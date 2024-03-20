@@ -10,7 +10,7 @@ guide = {
     "n_transistor" : ["SN", "NA"],
     "p_transistor" : ["SP", "NA", "P"],
     "r_contact" : ["CNA", "NA", "M1", "CNA", "NA", "M1", "M1"],
-    "b_contact" : ["CPA", "NA", "M1", "P", "CPA", "NA", "M1", "P", "M1"],
+    "b_contact" : ["CPA", "NA", "M1", "P", "CPA", "NA", "M1", "P"],
     "m_contact" : ["P", "NA", "NA", "CNE", "M1", "M1"]
 }
 @dataclass(frozen=True, eq=False)
@@ -146,16 +146,14 @@ def read_m_contact(file, data, number):
 
 
 def transform_lines_to_component(file, data, number, component):
-    if component == "r_contact":
-        read_r_contact(file, data, number)
-    if component == "b_contact":
-        read_b_contact(file, data, number)
-    if component == "m_contact":
-        read_m_contact(file, data,number)
-    if component == "n_transistor":
-        read_n_transistor(file, data, number)
-    if component == "p_transistor":
-        read_p_transistor(file, data, number)
+    operation = {
+        "r_contact" : read_r_contact,
+        "b_contact" : read_b_contact,
+        "m_contact" : read_m_contact,
+        "n_transistor" : read_n_transistor,
+        "p_transistor" : read_p_transistor
+    }
+    operation[component](file, data, number)
 
 
 def match_layer_name_to_component(layers: list):

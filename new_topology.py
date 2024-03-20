@@ -1,24 +1,19 @@
 # -*- coding: utf-8 -*-
-import numpy as np
 import networkx
-import matplotlib.patches as patches
 import matplotlib
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.image as image
 from util import *
 from dataclasses import fields, asdict
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-from shapely.geometry import Polygon
-import time
+
 
 TRANSISTOR_FILE_NAME = "static/png-clipart-transistor-npn-electronics-electronic-symbol-symbol-miscellaneous-electronics.png"
 
 # showing the layers in matplotlib
 transistor_img = image.imread(TRANSISTOR_FILE_NAME)
 
-
+#TODO добавить повсеместно типизацию
 def two_comp_intersect(comp1, comp2):
     """
     check if two components are intersected
@@ -50,7 +45,7 @@ def convert_dict_to_graph(dict):
             if two_comp_intersect(dict[comp1], dict[comp2]):#TODO некоторые пары мы проходим дважды, неэффективно
                 graph.add_edge(comp1, comp2)
                 graph.add_edge(comp2, comp1)
-    print(len(graph.nodes))
+    return graph
     print(len(graph.edges))
 
 
@@ -63,3 +58,9 @@ data = read_file_to_list(file_name)
 print("DATA")
 print(data)
 print(data.keys())
+graph1 = convert_dict_to_graph(data)
+graph2 = convert_dict_to_graph(data)
+graph2.add_edge("r_contact114", "m_contact135")
+print(networkx.vf2pp_is_isomorphic(graph1, graph2))
+networkx.draw(graph1, with_labels = True)
+plt.show()
