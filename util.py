@@ -84,110 +84,28 @@ def convert_list_to_poly(list):
     return Polygon(polygon)
 
 
-def read_n_transistor(file, data: dict, number):
-    """
-    программа добавления строк в качестве n транзистора
-    :param file:
-    :param data:
-    :param number:
-    :return:
-    """
+def read_general_component(file, data: dict, component_name, num_of_layers, number):
     polygons = []
-    for i in range(2):
+    for i in range(num_of_layers):
         file.readline()
         layer_line = file.readline().split()
         polygon = convert_list_to_poly(layer_line[1:])
         polygons.append(polygon)
-    transistor = n_transistor(*polygons)
-    data["n_transistor" + str(number)] = transistor
-    return transistor
-
-
-def read_p_transistor(file, data: dict, number):
-    """
-    программа добавления строк на случай p транзистора
-    :param file:
-    :param data:
-    :param number:
-    :param extra_line:
-    :return:
-    """
-    polygons = []
-    for i in range(3):
-        file.readline()
-        layer_line = file.readline().split()
-        polygon = convert_list_to_poly(layer_line[1:])
-        polygons.append(polygon)
-    transistor = p_transistor(*polygons)
-    data["p_transistor" + str(number)] = transistor
-    return transistor
-
-def read_r_contact(file, data, number):
-    polygons = []
-    for i in range(7):
-        file.readline()
-        layer_line = file.readline().split()
-        polygon = convert_list_to_poly(layer_line[1:])
-        polygons.append(polygon)
-    contact = r_contact(*polygons)
-    data["r_contact" + str(number)] = contact
-    return contact
-
-def read_b_contact(file, data, number):
-    polygons = []
-    for i in range(9):
-        file.readline()
-        layer_line = file.readline().split()
-        polygon = convert_list_to_poly(layer_line[1:])
-        polygons.append(polygon)
-    contact = b_contact(*polygons)
-    data["b_contact" + str(number)] = contact
-    return contact
-
-def read_m_contact(file, data, number):
-    polygons = []
-    for i in range(6):
-        file.readline()
-        layer_line = file.readline().split()
-        polygon = convert_list_to_poly(layer_line[1:])
-        polygons.append(polygon)
-    contact = m_contact(*polygons)
-    data["m_contact" + str(number)] = contact
-    return contact
-
-def read_g_contact(file, data, number):
-    polygons = []
-    for i in range(2):
-        file.readline()
-        layer_line = file.readline().split()
-        polygon = convert_list_to_poly(layer_line[1:])
-        polygons.append(polygon)
-    contact = g_contact(*polygons)
-    data["g_contact" + str(number)] = contact
-    return contact
-
-def read_y_contact(file, data, number):
-    polygons = []
-    for i in range(2):
-        file.readline()
-        layer_line = file.readline().split()
-        polygon = convert_list_to_poly(layer_line[1:])
-        polygons.append(polygon)
-    contact = y_contact(*polygons)
-    data["y_contact" + str(number)] = contact
+    contact = eval(component_name)(*polygons)
+    data[component_name + str(number)] = contact
     return contact
 
 def transform_lines_to_component(file, data, number, component):
     operation = {
-        "r_contact" : read_r_contact,
-        "b_contact" : read_b_contact,
-        "m_contact" : read_m_contact,
-        "n_transistor" : read_n_transistor,
-        "p_transistor" : read_p_transistor,
-        "g_contact" : read_g_contact,
-        "y_contact" : read_y_contact
+        "r_contact" : 7,
+        "b_contact" : 9,
+        "m_contact" : 6,
+        "n_transistor" : 2,
+        "p_transistor" : 3,
+        "g_contact" : 2,
+        "y_contact" : 2
     }
-    operation[component](file, data, number)
+    read_general_component(file, data, component, operation[component], number)
 
 
 def match_layer_name_to_component(layers: list):
@@ -246,6 +164,7 @@ def read_file_to_list(name):
             layer_names = []
             layer_polys = []
     print(len(garbage_list))
+    print(garbage_list)
     print(len(result))
     return result
 
