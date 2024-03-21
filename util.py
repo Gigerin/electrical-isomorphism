@@ -12,7 +12,8 @@ guide = {
     "r_contact" : ["CNA", "NA", "M1", "CNA", "NA", "M1", "M1"],
     "b_contact" : ["CPA", "NA", "M1", "P", "CPA", "NA", "M1", "P"],
     "m_contact" : ["P", "NA", "NA", "CNE", "M1", "M1"],
-    "g_contact" : ["SI", "SI"]
+    "g_contact" : ["SI", "SI"],
+    "y_contact" : ["M1", "M1"]
 }
 @dataclass(frozen=True, eq=False)
 class n_transistor:
@@ -62,6 +63,10 @@ class g_contact:
     SI_layer: Polygon
     SI_layer2: Polygon
 
+@dataclass(frozen=True, eq=False)
+class y_contact:
+    M1_layer: Polygon
+    M1_layer2: Polygon
 def convert_list_to_poly(list):
     """
     Конвертируем список точек формата cif в формат многоугольников
@@ -161,6 +166,16 @@ def read_g_contact(file, data, number):
     data["g_contact" + str(number)] = contact
     return contact
 
+def read_y_contact(file, data, number):
+    polygons = []
+    for i in range(2):
+        file.readline()
+        layer_line = file.readline().split()
+        polygon = convert_list_to_poly(layer_line[1:])
+        polygons.append(polygon)
+    contact = y_contact(*polygons)
+    data["y_contact" + str(number)] = contact
+    return contact
 
 def transform_lines_to_component(file, data, number, component):
     operation = {
@@ -169,7 +184,8 @@ def transform_lines_to_component(file, data, number, component):
         "m_contact" : read_m_contact,
         "n_transistor" : read_n_transistor,
         "p_transistor" : read_p_transistor,
-        "g_contact" : read_g_contact
+        "g_contact" : read_g_contact,
+        "y_contact" : read_y_contact
     }
     operation[component](file, data, number)
 
