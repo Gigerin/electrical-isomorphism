@@ -11,7 +11,8 @@ guide = {
     "p_transistor" : ["SP", "NA", "P"],
     "r_contact" : ["CNA", "NA", "M1", "CNA", "NA", "M1", "M1"],
     "b_contact" : ["CPA", "NA", "M1", "P", "CPA", "NA", "M1", "P"],
-    "m_contact" : ["P", "NA", "NA", "CNE", "M1", "M1"]
+    "m_contact" : ["P", "NA", "NA", "CNE", "M1", "M1"],
+    "g_contact" : ["SI", "SI"]
 }
 @dataclass(frozen=True, eq=False)
 class n_transistor:
@@ -55,6 +56,11 @@ class m_contact:
     CNE_layer: Polygon
     M1_layer: Polygon
     M1_layer2: Polygon
+
+@dataclass(frozen=True, eq=False)
+class g_contact:
+    SI_layer: Polygon
+    SI_layer2: Polygon
 
 def convert_list_to_poly(list):
     """
@@ -144,6 +150,17 @@ def read_m_contact(file, data, number):
     data["m_contact" + str(number)] = contact
     return contact
 
+def read_g_contact(file, data, number):
+    polygons = []
+    for i in range(2):
+        file.readline()
+        layer_line = file.readline().split()
+        polygon = convert_list_to_poly(layer_line[1:])
+        polygons.append(polygon)
+    contact = g_contact(*polygons)
+    data["g_contact" + str(number)] = contact
+    return contact
+
 
 def transform_lines_to_component(file, data, number, component):
     operation = {
@@ -151,7 +168,8 @@ def transform_lines_to_component(file, data, number, component):
         "b_contact" : read_b_contact,
         "m_contact" : read_m_contact,
         "n_transistor" : read_n_transistor,
-        "p_transistor" : read_p_transistor
+        "p_transistor" : read_p_transistor,
+        "g_contact" : read_g_contact
     }
     operation[component](file, data, number)
 
@@ -211,4 +229,8 @@ def read_file_to_list(name):
             number += 1
             layer_names = []
             layer_polys = []
+    print(len(garbage_list))
+    print(len(result))
     return result
+
+read_file_to_list("sum.txt")
