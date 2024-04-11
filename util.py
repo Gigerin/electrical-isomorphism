@@ -12,8 +12,10 @@ guide = {
     "r_contact" : ["CNA", "NA", "M1", "CNA", "NA", "M1", "M1"],
     "b_contact" : ["CPA", "NA", "M1", "P", "CPA", "NA", "M1", "P"],
     "m_contact" : ["P", "NA", "NA", "CNE", "M1", "M1"],
-    "g_contact" : ["SI", "SI"],
-    "y_contact" : ["M1", "M1"]
+    #"g_contact" : ["SI"],
+    #"y_contact" : ["M1"],
+    #"с_contact" : ["M2"],
+    #"b_pocket" : ["KN"],
 }
 @dataclass(frozen=True, eq=False)
 class n_transistor:
@@ -61,12 +63,21 @@ class m_contact:
 @dataclass(frozen=True, eq=False)
 class g_contact:
     SI_layer: Polygon
-    SI_layer2: Polygon
+    #SI_layer2: Polygon
 
 @dataclass(frozen=True, eq=False)
 class y_contact:
     M1_layer: Polygon
-    M1_layer2: Polygon
+    #M1_layer2: Polygon
+
+@dataclass(frozen=True, eq=False)
+class с_contact:
+    M2_layer: Polygon
+    #M1_layer2: Polygon
+
+@dataclass(frozen=True, eq=False)
+class b_pocket:
+    KN_layer: Polygon
 def convert_list_to_poly(list):
     """
     Конвертируем список точек формата cif в формат многоугольников
@@ -74,6 +85,7 @@ def convert_list_to_poly(list):
     :return:
     """
     polygon = []
+    print(list)
     for i in range(0, len(list), 2):
         polygon.append(
             (
@@ -102,9 +114,12 @@ def transform_lines_to_component(file, data, number, component):
         "m_contact" : 6,
         "n_transistor" : 2,
         "p_transistor" : 3,
-        "g_contact" : 2,
-        "y_contact" : 2
+        "g_contact" : 1,
+        "y_contact" : 1,
+        "с_contact" : 1,
+        "b_pocket" : 1
     }
+    print(component)
     read_general_component(file, data, component, operation[component], number)
 
 
@@ -164,8 +179,11 @@ def read_file_to_list(name):
             layer_names = []
             layer_polys = []
     print(len(garbage_list))
+    with open("garbage.txt", "w") as f:
+        for line in garbage_list:
+            f.write((str(line)))
+            f.write("\n")
     print(garbage_list)
     print(len(result))
     return result
 
-read_file_to_list("sum.txt")
