@@ -148,25 +148,7 @@ def read_general_component(file, data: dict, component_name, num_of_layers, numb
     return contact
 
 def transform_lines_to_component(file, data, number, component):
-    operation = {
-        "r_contact" : 7,
-        "b_contact" : 9,
-        "m_contact" : 6,
-        "n_transistor" : 2,
-        "p_transistor" : 3,
-        "CNA_dot_contact": 3,
-        "CPA_dot_contact": 4,
-        "CSI_dot_contact": 3,
-        "CM1_dot_contact": 3,
-        "Eqwi_NA_PE_contact": 6,
-        "SI_rail" : 1,
-        "M1_rail" : 1,
-        "M2_rail" : 1,
-        "b_pocket" : 1
-
-    }
-    print(component)
-    read_general_component(file, data, component, operation[component], number)
+    read_general_component(file, data, component, len(guide[component]), number)
 
 
 def match_layer_name_to_component(layers: list):
