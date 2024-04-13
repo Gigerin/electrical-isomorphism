@@ -108,5 +108,9 @@ graph1 = convert_dict_to_graph(data)
 graph2 = convert_dict_to_graph(data)
 graph2.add_edge("r_contact114", "m_contact135")
 print(networkx.vf2pp_is_isomorphic(graph1, graph2))
-networkx.draw(graph1, nx.get_node_attributes(graph1, 'pos'), with_labels = True)
+node_positions = {node: attributes['pos'] for node, attributes in graph1.nodes(data=True)}
+
+# Use spring layout to automatically position nodes
+pos = nx.spring_layout(graph1, pos=node_positions, fixed=node_positions.keys(), k=1000)
+networkx.draw(graph1, pos, with_labels = True)
 plt.show()
