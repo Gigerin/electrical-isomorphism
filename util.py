@@ -12,9 +12,9 @@ guide = {
     "r_contact" : ["CNA", "NA", "M1", "CNA", "NA", "M1", "M1"],
     "b_contact" : ["CPA", "NA", "M1", "P", "CPA", "NA", "M1", "P"],
     "m_contact" : ["P", "NA", "NA", "CNE", "M1", "M1"],
-    #"g_contact" : ["SI"],
-    #"y_contact" : ["M1"],
-    #"с_contact" : ["M2"],
+    "g_contact" : ["SI"],
+    "y_contact" : ["M1"],
+    "с_contact" : ["M2"],
     #"b_pocket" : ["KN"],
 }
 @dataclass(frozen=True, eq=False)
