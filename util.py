@@ -10,13 +10,18 @@ guide = {
     "n_transistor" : ["SN", "NA"],
     "p_transistor" : ["SP", "NA", "P"],
     "r_contact" : ["CNA", "NA", "M1", "CNA", "NA", "M1", "M1"],
-    "b_contact" : ["CPA", "NA", "M1", "P", "CPA", "NA", "M1", "P"],
+    "b_contact" : ["CPA", "NA", "M1", "P", "CPA", "NA", "M1", "P", "M1"],
     "m_contact" : ["P", "NA", "NA", "CNE", "M1", "M1"],
-    "g_contact" : ["SI"],
-    "y_contact" : ["M1"],
-    "с_contact" : ["M2"],
+    "r_dot_contact": ["CNA", "NA", "M1"],
+    "b_dot_contact": ["CPA", "NA", "M1", "P"],
+    "CSI_dot_contact": ["CSI", "SI", "M1"],
+    "CM1_dot_contact": ["CM1", "M1", "M2"],
+    "g_rail" : ["SI"],
+    "y_rail" : ["M1"],
+    "c_rail" : ["M2"],
     #"b_pocket" : ["KN"],
 }
+
 @dataclass(frozen=True, eq=False)
 class n_transistor:
     SN_layer: Polygon
@@ -42,6 +47,25 @@ class b_contact:
     M1_layer3: Polygon
 
 @dataclass(frozen=True, eq=False)
+class b_dot_contact:
+    CPA_layer: Polygon
+    NA_layer: Polygon
+    M1_layer: Polygon
+    P_layer: Polygon
+
+
+@dataclass(frozen=True, eq=False)
+class CSI_dot_contact:
+    CSI_layer: Polygon
+    SI_layer: Polygon
+    M1_layer: Polygon
+
+@dataclass(frozen=True, eq=False)
+class CM1_dot_contact:
+    CM1_layer: Polygon
+    M1_layer: Polygon
+    M2_layer: Polygon
+@dataclass(frozen=True, eq=False)
 class r_contact:
     CNA_layer: Polygon
     NA_layer: Polygon
@@ -50,6 +74,12 @@ class r_contact:
     NA_layer2: Polygon
     M1_layer2: Polygon
     M1_layer3: Polygon
+
+@dataclass(frozen=True, eq=False)
+class r_dot_contact:
+    CNA_layer: Polygon
+    NA_layer: Polygon
+    M1_layer: Polygon
 
 @dataclass(frozen=True, eq=False)
 class m_contact:
@@ -61,17 +91,17 @@ class m_contact:
     M1_layer2: Polygon
 
 @dataclass(frozen=True, eq=False)
-class g_contact:
+class g_rail:
     SI_layer: Polygon
     #SI_layer2: Polygon
 
 @dataclass(frozen=True, eq=False)
-class y_contact:
+class y_rail:
     M1_layer: Polygon
     #M1_layer2: Polygon
 
 @dataclass(frozen=True, eq=False)
-class с_contact:
+class c_rail:
     M2_layer: Polygon
     #M1_layer2: Polygon
 
@@ -114,10 +144,15 @@ def transform_lines_to_component(file, data, number, component):
         "m_contact" : 6,
         "n_transistor" : 2,
         "p_transistor" : 3,
-        "g_contact" : 1,
-        "y_contact" : 1,
-        "с_contact" : 1,
+        "r_dot_contact": 3,
+        "b_dot_contact": 4,
+        "CSI_dot_contact": 3,
+        "CM1_dot_contact": 3,
+        "g_rail" : 1,
+        "y_rail" : 1,
+        "c_rail" : 1,
         "b_pocket" : 1
+
     }
     print(component)
     read_general_component(file, data, component, operation[component], number)

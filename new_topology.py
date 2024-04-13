@@ -34,7 +34,7 @@ def two_comp_intersect(comp1, comp2):
     comp2 = asdict(comp2).values()
     for poly1 in comp1:
         for poly2 in comp2:
-            if poly1.intersects(poly2) or poly2.intersects(poly1):
+            if poly1.contains(poly2) or poly2.contains(poly1):
                 return True
     return False
 
@@ -57,10 +57,7 @@ def convert_dict_to_graph(dict):
             if comp1 == comp2: #чек если одна и та же компонента(петли не хотим)
                 continue
             if 'contact' not in comp1 and 'contact' not in comp2:
-                #если не контакт скипаем
-                #pass
                 continue
-
             if two_comp_intersect(dict[comp1], dict[comp2]):#TODO некоторые пары мы проходим дважды, неэффективно
                 graph.add_edge(comp1, comp2)
                 graph.add_edge(comp2, comp1)
