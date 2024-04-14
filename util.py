@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from shapely.geometry import Polygon
-from dataclasses import dataclass
-
+from dataclasses import dataclass, make_dataclass, fields
+from collections import defaultdict
 #тут находится гайд по порядку слоев для детекта
 #он существует чтобы убрать код КОТОРЫЙ НЕ ПОНРАВИЛСЯ АНЕ
 #И ОНА НАЗВАЛА МЕНЯ ЯНДЕРЕ ДЕВОМ
@@ -22,102 +22,29 @@ guide = {
     "M2_rail" : ["M2"],
     #"b_pocket" : ["KN"],
 }
+classes = {}
+def mark_duplicates(lst):
+    counts = defaultdict(int)
+    marked_list = []
 
-@dataclass(frozen=True, eq=False)
-class n_transistor:
-    SN_layer: Polygon
-    NA_layer: Polygon
+    for item in lst:
+        counts[item] += 1
+        marked_list.append(item + (str(counts[item]) if counts[item] > 1 else ''))
 
+    return marked_list
 
-@dataclass(frozen=True, eq=False)
-class p_transistor:
-    SP_layer: Polygon
-    P_layer: Polygon
-    NA_layer: Polygon
+def create_dataclasses(class_dict):
+    global classes
+    for class_name, attributes in class_dict.items():
+        # Define field names and types for the dataclass
+        fields_dict = {name: Polygon for name in mark_duplicates(attributes)}
 
-@dataclass(frozen=True, eq=False)
-class b_contact:
-    CPA_layer: Polygon
-    NA_layer: Polygon
-    M1_layer: Polygon
-    P_layer: Polygon
-    CPA_layer2: Polygon
-    NA_layer2: Polygon
-    M1_layer2: Polygon
-    P_layer2: Polygon
-    M1_layer3: Polygon
+        # Create the dataclass with the specified fields
+        DataClass = make_dataclass(class_name, fields_dict.items(), frozen=True, eq=False)
 
-@dataclass(frozen=True, eq=False)
-class CPA_dot_contact:
-    CPA_layer: Polygon
-    NA_layer: Polygon
-    M1_layer: Polygon
-    P_layer: Polygon
+        # Store the generated dataclass
+        classes[class_name] = DataClass
 
-
-@dataclass(frozen=True, eq=False)
-class CSI_dot_contact:
-    CSI_layer: Polygon
-    SI_layer: Polygon
-    M1_layer: Polygon
-
-@dataclass(frozen=True, eq=False)
-class Eqwi_NA_PE_contact:
-    NA_layer: Polygon
-    NA_layer2: Polygon
-    P_layer: Polygon
-    CPE_layer: Polygon
-    M1_layer: Polygon
-    M1_layer2: Polygon
-
-@dataclass(frozen=True, eq=False)
-class CM1_dot_contact:
-    CM1_layer: Polygon
-    M1_layer: Polygon
-    M2_layer: Polygon
-@dataclass(frozen=True, eq=False)
-class r_contact:
-    CNA_layer: Polygon
-    NA_layer: Polygon
-    M1_layer: Polygon
-    CNA_layer2: Polygon
-    NA_layer2: Polygon
-    M1_layer2: Polygon
-    M1_layer3: Polygon
-
-@dataclass(frozen=True, eq=False)
-class CNA_dot_contact:
-    CNA_layer: Polygon
-    NA_layer: Polygon
-    M1_layer: Polygon
-
-@dataclass(frozen=True, eq=False)
-class m_contact:
-    P_layer: Polygon
-    NA_layer: Polygon
-    NA_layer2: Polygon
-    CNE_layer: Polygon
-    M1_layer: Polygon
-    M1_layer2: Polygon
-
-@dataclass(frozen=True, eq=False)
-class SI_rail:
-    SI_layer: Polygon
-    #SI_layer2: Polygon
-
-@dataclass(frozen=True, eq=False)
-class M1_rail:
-    M1_layer: Polygon
-    #M1_layer2: Polygon
-
-@dataclass(frozen=True, eq=False)
-class M2_rail:
-    M2_layer: Polygon
-    #M1_layer2: Polygon
-
-@dataclass(frozen=True, eq=False)
-class b_pocket:
-    KN_layer: Polygon
 def convert_list_to_poly(list):
     """
     Конвертируем список точек формата cif в формат многоугольников
@@ -125,7 +52,6 @@ def convert_list_to_poly(list):
     :return:
     """
     polygon = []
-    print(list)
     for i in range(0, len(list), 2):
         polygon.append(
             (
@@ -143,7 +69,7 @@ def read_general_component(file, data: dict, component_name, num_of_layers, numb
         layer_line = file.readline().split()
         polygon = convert_list_to_poly(layer_line[1:])
         polygons.append(polygon)
-    contact = eval(component_name)(*polygons)
+    contact = classes[component_name](*polygons)
     data[component_name + str(number)] = contact
     return contact
 
@@ -171,6 +97,8 @@ def read_file_to_list(name):
     :param name:
     :return:
     """
+    global guide
+    create_dataclasses(guide)
     number = 1
     result = {}
     garbage_list = []
