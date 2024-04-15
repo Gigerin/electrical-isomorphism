@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import itertools
 import numpy as np
 import networkx
+import matplotlib.pyplot as plt
 
 
 @dataclass
@@ -64,6 +65,11 @@ raw_data_2 = read_file("source2.txt")
 graph_1 = data_to_graph(raw_data_1)
 # переводим данные в формат словаря в графе
 graph_2 = data_to_graph(raw_data_2)
+fig, ax = plt.subplots()
+
+fig.set_size_inches(8, 6)
 
 # TODO добавить проверку совпадений типов транзисторов
-print(networkx.vf2pp_is_isomorphic(graph_1, graph_2))
+#print(networkx.vf2pp_is_isomorphic(graph_1, graph_2))
+networkx.draw_random(graph_1, with_labels=True)
+plt.show()

@@ -23,7 +23,7 @@ TRANSISTOR_FILE_NAME = "static/png-clipart-transistor-npn-electronics-electronic
 transistor_img = image.imread(TRANSISTOR_FILE_NAME)
 
 #TODO добавить повсеместно типизацию
-def two_comp_intersect(comp1, comp2):
+def two_comp_contains(comp1, comp2):
     """
     check if two components are intersected
     :param comp1:
@@ -35,6 +35,21 @@ def two_comp_intersect(comp1, comp2):
     for poly1 in comp1:
         for poly2 in comp2:
             if poly1.contains(poly2) or poly2.contains(poly1):
+                return True
+    return False
+
+def two_comp_intersects(comp1, comp2):
+    """
+    check if two components are intersected
+    :param comp1:
+    :param comp2:
+    :return:
+    """
+    comp1 = asdict(comp1).values() #TODO неэффективно каждый раз все в словарь переводить.
+    comp2 = asdict(comp2).values()
+    for poly1 in comp1:
+        for poly2 in comp2:
+            if poly1.intersects(poly2) or poly2.intersects(poly1):
                 return True
     return False
 
@@ -56,11 +71,23 @@ def convert_dict_to_graph(dict):
         for comp2 in dict.keys():
             if comp1 == comp2: #чек если одна и та же компонента(петли не хотим)
                 continue
-            if 'contact' not in comp1 and 'contact' not in comp2:
-                continue
-            if two_comp_intersect(dict[comp1], dict[comp2]):#TODO некоторые пары мы проходим дважды, неэффективно
-                graph.add_edge(comp1, comp2)
-                graph.add_edge(comp2, comp1)
+            if 'contact' in comp1 or 'contact' in comp2:
+                if two_comp_contains(dict[comp1], dict[comp2]):#TODO некоторые пары мы проходим дважды, неэффективно
+                    graph.add_edge(comp1, comp2)
+                    graph.add_edge(comp2, comp1)
+            if 'transistor' in comp1 and 'transistor' in comp2:
+                if two_comp_intersects(dict[comp1], dict[comp2]):#TODO некоторые пары мы проходим дважды, неэффективно
+                    graph.add_edge(comp1, comp2)
+                    graph.add_edge(comp2, comp1)
+            if 'transistor' in comp1 and 'SI_rail' in comp2:
+                if two_comp_intersects(dict[comp1], dict[comp2]):#TODO некоторые пары мы проходим дважды, неэффективно
+                    graph.add_edge(comp1, comp2)
+                    graph.add_edge(comp2, comp1)
+            if 'transistor' in comp1 and 'Eqwi' in comp2:
+                if two_comp_intersects(dict[comp1], dict[comp2]):#TODO некоторые пары мы проходим дважды, неэффективно
+                    graph.add_edge(comp1, comp2)
+                    graph.add_edge(comp2, comp1)
+
     return graph
 
 def draw_schema(data):
