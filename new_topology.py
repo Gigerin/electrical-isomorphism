@@ -139,5 +139,16 @@ node_positions = {node: attributes['pos'] for node, attributes in graph1.nodes(d
 
 # Use spring layout to automatically position nodes
 pos = nx.spring_layout(graph1, pos=node_positions, fixed=node_positions.keys(), k=1000)
-networkx.draw(graph1, pos, with_labels = True)
+
+
+color_dict = {'SI': 'green', 'M1': 'yellow', 'M2': 'cyan', 'n_transistor': 'red', 'p_transistor': 'blue'}
+
+def find_color(node_name):
+    for substring, color in color_dict.items():
+        if substring in str(node_name):
+            return color
+    # Default color if no match found
+    return 'black'
+
+networkx.draw(graph1, pos, node_color=[find_color(node) for node in graph1.nodes()], with_labels = True)
 plt.show()
