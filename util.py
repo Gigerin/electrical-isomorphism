@@ -2,36 +2,40 @@
 from shapely.geometry import Polygon
 from dataclasses import dataclass, make_dataclass, fields
 from collections import defaultdict
-#тут находится гайд по порядку слоев для детекта
-#он существует чтобы убрать код КОТОРЫЙ НЕ ПОНРАВИЛСЯ АНЕ
-#И ОНА НАЗВАЛА МЕНЯ ЯНДЕРЕ ДЕВОМ
-#ЧТО Я НИКОГДА ЕЙ НЕ ПРОЩУ
+
+# тут находится гайд по порядку слоев для детекта
+# он существует чтобы убрать код КОТОРЫЙ НЕ ПОНРАВИЛСЯ АНЕ
+# И ОНА НАЗВАЛА МЕНЯ ЯНДЕРЕ ДЕВОМ
+# ЧТО Я НИКОГДА ЕЙ НЕ ПРОЩУ
 guide = {
-    "n_transistor" : ["SN", "NA"],
-    "p_transistor" : ["SP", "NA", "P"],
-    "r_contact" : ["CNA", "NA", "M1", "CNA", "NA", "M1", "M1"],
-    "b_contact" : ["CPA", "NA", "M1", "P", "CPA", "NA", "M1", "P", "M1"],
-    "m_contact" : ["P", "NA", "NA", "CNE", "M1", "M1"],
-    "Eqwi_NA_PE_contact" : ["NA", "NA", "P", "CPE", "M1", "M1"],
+    "n_transistor": ["SN", "NA"],
+    "p_transistor": ["SP", "NA", "P"],
+    "r_contact": ["CNA", "NA", "M1", "CNA", "NA", "M1", "M1"],
+    "b_contact": ["CPA", "NA", "M1", "P", "CPA", "NA", "M1", "P", "M1"],
+    "m_contact": ["P", "NA", "NA", "CNE", "M1", "M1"],
+    "Eqwi_NA_PE_contact": ["NA", "NA", "P", "CPE", "M1", "M1"],
     "CNA_dot_contact": ["CNA", "NA", "M1"],
     "CPA_dot_contact": ["CPA", "NA", "M1", "P"],
     "CSI_dot_contact": ["CSI", "SI", "M1"],
     "CM1_dot_contact": ["CM1", "M1", "M2"],
-    "SI_rail" : ["SI"],
-    "M1_rail" : ["M1"],
-    "M2_rail" : ["M2"],
-    #"b_pocket" : ["KN"],
+    "SI_rail": ["SI"],
+    "M1_rail": ["M1"],
+    "M2_rail": ["M2"],
+    # "b_pocket" : ["KN"],
 }
 classes = {}
+
+
 def mark_duplicates(lst):
     counts = defaultdict(int)
     marked_list = []
 
     for item in lst:
         counts[item] += 1
-        marked_list.append(item + (str(counts[item]) if counts[item] > 1 else ''))
+        marked_list.append(item + (str(counts[item]) if counts[item] > 1 else ""))
 
     return marked_list
+
 
 def create_dataclasses(class_dict):
     global classes
@@ -40,10 +44,13 @@ def create_dataclasses(class_dict):
         fields_dict = {name: Polygon for name in mark_duplicates(attributes)}
 
         # Create the dataclass with the specified fields
-        DataClass = make_dataclass(class_name, fields_dict.items(), frozen=True, eq=False)
+        DataClass = make_dataclass(
+            class_name, fields_dict.items(), frozen=True, eq=False
+        )
 
         # Store the generated dataclass
         classes[class_name] = DataClass
+
 
 def convert_list_to_poly(list):
     """
@@ -73,21 +80,27 @@ def read_general_component(file, data: dict, component_name, num_of_layers, numb
     data[component_name + str(number)] = contact
     return contact
 
+
 def transform_lines_to_component(file, data, number, component):
     read_general_component(file, data, component, len(guide[component]), number)
 
 
 def match_layer_name_to_component(layers: list):
     global guide
-    targets = guide.keys()  #можно удалять цель если не совпало а не проверять весь спиоск
+    targets = (
+        guide.keys()
+    )  # можно удалять цель если не совпало а не проверять весь спиоск
     for i in range(len(layers)):
         for target in targets:
             if layers[:i] == guide[target]:
                 return target
     return None
 
+
 def get_line(file):
     return file.readline().replace(";", "").split()
+
+
 def read_file_to_list(name):
     """
     Основная функция отвечающая за парсинг файла и его обработку в формат полигонов
@@ -112,7 +125,9 @@ def read_file_to_list(name):
                     f.readline()
                     break
         while True:
-            last_pos = f.tell()  # Запоминаем позицию на случай если не найдем никакого соответствия
+            last_pos = (
+                f.tell()
+            )  # Запоминаем позицию на случай если не найдем никакого соответствия
             layer_name = f.readline().replace(";", "").split()
             if not layer_name:
                 continue
@@ -142,4 +157,3 @@ def read_file_to_list(name):
     print(garbage_list)
     print(len(result))
     return result
-
