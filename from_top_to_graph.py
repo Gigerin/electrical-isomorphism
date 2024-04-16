@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import networkx
 import networkx as nx
-
-from util import *
+from util import read_file_to_list
 import matplotlib.patches as patches
 import matplotlib
 import matplotlib.image as image

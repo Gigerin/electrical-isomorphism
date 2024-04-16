@@ -1,20 +1,9 @@
 # -*- coding: utf-8 -*-
-import networkx
 import networkx as nx
-
 from dataclasses import dataclass
-from .util import *
-from .topology import n_transistor, p_transistor
-import matplotlib.patches as patches
-import matplotlib
-import matplotlib.image as image
-from dataclasses import asdict
+from topology import n_transistor, p_transistor
 
-matplotlib.use("TkAgg")
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-from shapely.geometry import MultiPolygon
+from shapely.geometry import Polygon
 
 
 @dataclass(frozen=True, eq=False)
@@ -39,3 +28,13 @@ def create_n_trans(topological_transistor: n_transistor):
     channel = SN_layer.intersection(NA_layer)
     trans = NPN_trans(in_out, zatvor, channel)
     return trans
+
+def create_p_trans(topological_transistor: p_transistor):
+    SP_layer = topological_transistor.SP_layer
+    NA_layer = topological_transistor.NA_layer
+    in_out = [NA_layer.difference(SP_layer), NA_layer.difference(SP_layer)]
+    zatvor = SP_layer
+    channel = SP_layer.intersection(NA_layer)
+    trans = NPN_trans(in_out, zatvor, channel)
+    return trans
+

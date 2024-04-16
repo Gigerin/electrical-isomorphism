@@ -310,7 +310,7 @@ def convert_data_to_graph(data):
             graph.add_node(key, layer=polygon)
     return graph
 
-
+"""
 file_name = input("Please enter name of file(blank for default):")
 if not file_name:
     file_name = "sum.cif"
@@ -318,7 +318,7 @@ data = read_file_to_list(file_name)
 print(data)
 print(data.keys())
 
-"""
+
 transistors = {
     k: data.pop(k)
     for k in list(data.keys())
