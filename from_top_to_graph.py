@@ -22,7 +22,7 @@ transistor_img = image.imread(TRANSISTOR_FILE_NAME)
 
 color_dict = { #TODO перенести в .env файл
     "M2": "cyan",
-    "M1": "yellow",
+    "M1": "gold",
     "SI": "green",
     "CPA": "blue",
     "CNA": "red",
@@ -161,7 +161,9 @@ def collapse_graph(graph):
             destroy_nodes.append(node)#TODO некрасиво
     for node in destroy_nodes:
         graph.remove_node(node)
+    graph.remove_edges_from(nx.selfloop_edges(graph))
     #шаг2 убираем все шины
+    """
     destroy_nodes = []
     for node in graph.nodes:
         if "rail" in node:
@@ -171,7 +173,7 @@ def collapse_graph(graph):
             destroy_nodes.append(node)  # TODO некрасиво
     for node in destroy_nodes:
         graph.remove_node(node)
-
+    """
 
 
 file_name = input("Please enter name of file(blank for default):")
@@ -217,7 +219,7 @@ plt.plot()
 node_colors = [find_color_node(node) for node in graph1.nodes()]
 edge_colors = [find_color_edge(edge) for edge in graph1.edges()]
 networkx.draw_networkx(
-    graph1, pos, node_color=node_colors, edge_color=edge_colors, with_labels=True
+    graph1, pos, node_color=node_colors, edge_color=edge_colors, width = 2, with_labels=True
 )
 plt.figure()
 collapse_graph(graph1)
