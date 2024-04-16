@@ -21,7 +21,7 @@ guide = {
     "SI_rail": ["SI"],
     "M1_rail": ["M1"],
     "M2_rail": ["M2"],
-    # "b_pocket" : ["KN"],
+    # "b_pocket" : ["KN"], #ЗОНА ЛИГИРОВАНИЯ
 }
 classes = {}
 

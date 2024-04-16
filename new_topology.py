@@ -20,6 +20,15 @@ TRANSISTOR_FILE_NAME = "static/png-clipart-transistor-npn-electronics-electronic
 # showing the layers in matplotlib
 transistor_img = image.imread(TRANSISTOR_FILE_NAME)
 
+color_dict = { #TODO перенести в .env файл
+    "M2": "cyan",
+    "M1": "yellow",
+    "SI": "green",
+    "CPA": "blue",
+    "CNA": "red",
+    "n_transistor": "red",
+    "p_transistor": "blue",
+}
 
 # TODO добавить повсеместно типизацию
 def two_comp_contains(comp1, comp2):
@@ -31,7 +40,7 @@ def two_comp_contains(comp1, comp2):
     """
     comp1 = asdict(
         comp1
-    ).values()  # TODO неэффективно каждый раз все в словарь переводить.
+    ).values()  # TODO неэффективно каждый раз все в словарь переводить. мб кэшировать?
     comp2 = asdict(comp2).values()
     for poly1 in comp1:
         for poly2 in comp2:
@@ -134,13 +143,44 @@ def draw_schema(data):
     plt.show()
 
 
+def collapse_graph(graph):
+    """
+    Схлопываем все контакты и шины
+    :param graph:
+    :return:
+    """
+    #шаг 1 убираем все контакты
+    destroy_nodes = []
+    for node in graph.nodes:
+        if "contact" in node:
+            print(graph[node])
+            temp = []
+            for edge1 in graph[node]:
+                for edge2 in graph[node]:
+                    graph.add_edge(edge1, edge2)
+            destroy_nodes.append(node)#TODO некрасиво
+    for node in destroy_nodes:
+        graph.remove_node(node)
+    #шаг2 убираем все шины
+    destroy_nodes = []
+    for node in graph.nodes:
+        if "rail" in node:
+            for edge1 in graph[node]:
+                for edge2 in graph[node]:
+                    graph.add_edge(edge1, edge2, name=node)
+            destroy_nodes.append(node)  # TODO некрасиво
+    for node in destroy_nodes:
+        graph.remove_node(node)
+
+
+
 file_name = input("Please enter name of file(blank for default):")
 if not file_name:
     file_name = "sum.cif"
 data = read_file_to_list(file_name)
 print("DATA")
 print(data)
-draw_schema(data)
+#draw_schema(data)
 print(data.keys())
 graph1 = convert_dict_to_graph(data)
 graph2 = convert_dict_to_graph(data)
@@ -152,15 +192,6 @@ node_positions = {
 
 # Use spring layout to automatically position nodes
 pos = nx.spring_layout(graph1, pos=node_positions, fixed=node_positions.keys(), k=1000)
-
-
-color_dict = {
-    "SI": "green",
-    "M2": "cyan",
-    "M1": "yellow",
-    "n_transistor": "red",
-    "p_transistor": "blue",
-}
 
 
 def find_color_node(node_name):
@@ -182,9 +213,18 @@ def find_color_edge(edge):
     # Default color if no match found
     return "black"
 
-
+plt.plot()
 node_colors = [find_color_node(node) for node in graph1.nodes()]
 edge_colors = [find_color_edge(edge) for edge in graph1.edges()]
+networkx.draw_networkx(
+    graph1, pos, node_color=node_colors, edge_color=edge_colors, with_labels=True
+)
+plt.figure()
+collapse_graph(graph1)
+node_colors = [find_color_node(node) for node in graph1.nodes()]
+edge_colors = [find_color_edge(edge) for edge in graph1.edges()]
+
+
 
 networkx.draw_networkx(
     graph1, pos, node_color=node_colors, edge_color=edge_colors, with_labels=True
