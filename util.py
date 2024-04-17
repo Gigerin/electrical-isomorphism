@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
+import numpy as np
+from matplotlib import pyplot as plt, patches
+import matplotlib.cm as cm
+
 from shapely.geometry import Polygon
-from dataclasses import dataclass, make_dataclass, fields
+from dataclasses import dataclass, make_dataclass, fields, asdict
 from collections import defaultdict
 
 # тут находится гайд по порядку слоев для детекта
@@ -157,3 +161,34 @@ def read_file_to_list(name):
     print(garbage_list)
     print(len(result))
     return result
+
+
+def draw_schema(data):
+    num_keys = 10000
+    fig, ax = plt.subplots()
+    fig.set_size_inches(8, 6)
+    colors = cm.viridis(np.linspace(0, 1, num_keys))
+    color_dict = {key: color for key, color in zip(data.keys(), colors)}
+    for key in data.keys():
+        ver = data[key]
+        vertic = asdict(ver).values()
+        for vertices in vertic:
+            xy = list(vertices.exterior.coords)
+            if str(key)[:2] != "SP":
+                polygon = patches.Polygon(
+                    xy,
+                    closed=True,
+                    linewidth=1,
+                    edgecolor=color_dict[key],
+                    facecolor="none",
+                )
+            else:
+                polygon = patches.Polygon(
+                    xy, closed=True, linewidth=1, edgecolor="red", facecolor="none"
+                )
+            ax.add_patch(polygon)
+    ax.set_xlim(-10000, 10000)
+    ax.set_ylim(-10000, 10000)
+
+    # Show the plot
+    plt.show()

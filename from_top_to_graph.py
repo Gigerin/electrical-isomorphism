@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import networkx
 import networkx as nx
-from util import read_file_to_list
+from util import read_file_to_list, draw_schema
 import matplotlib.patches as patches
 import matplotlib
 import matplotlib.image as image
@@ -110,36 +110,6 @@ def convert_dict_to_graph(dict):
 
     return graph
 
-
-def draw_schema(data):
-    num_keys = 10000
-    fig, ax = plt.subplots()
-    fig.set_size_inches(8, 6)
-    colors = cm.viridis(np.linspace(0, 1, num_keys))
-    color_dict = {key: color for key, color in zip(data.keys(), colors)}
-    for key in data.keys():
-        ver = data[key]
-        vertic = asdict(ver).values()
-        for vertices in vertic:
-            xy = list(vertices.exterior.coords)
-            if str(key)[:2] != "SP":
-                polygon = patches.Polygon(
-                    xy,
-                    closed=True,
-                    linewidth=1,
-                    edgecolor=color_dict[key],
-                    facecolor="none",
-                )
-            else:
-                polygon = patches.Polygon(
-                    xy, closed=True, linewidth=1, edgecolor="red", facecolor="none"
-                )
-            ax.add_patch(polygon)
-    ax.set_xlim(-10000, 10000)
-    ax.set_ylim(-10000, 10000)
-
-    # Show the plot
-    plt.show()
 
 
 def collapse_graph(graph):
